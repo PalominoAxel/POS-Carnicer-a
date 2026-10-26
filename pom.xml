@@ -29,10 +29,6 @@
         <jbcrypt.version>0.4</jbcrypt.version>
         <controlsfx.version>11.2.1</controlsfx.version>
         <atlantafx.version>2.0.1</atlantafx.version>
-        <logback.version>1.2.13</logback.version>
-        <commons-lang3.version>3.14.0</commons-lang3.version>
-        <junit.version>5.10.2</junit.version>
-        <mockito.version>5.11.0</mockito.version>
     </properties>
 
     <dependencies>
@@ -89,34 +85,30 @@
             <artifactId>atlantafx-base</artifactId>
             <version>${atlantafx.version}</version>
         </dependency>
+        <dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi-ooxml</artifactId>
+    <version>5.3.0</version>
+</dependency>
 
-        <!-- Apache Commons Lang: StringUtils y NumberUtils (cadenas y decimales) -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
-        </dependency>
+<!-- Puente para redirigir los logs internos de POI (Log4j2) hacia SLF4J/Logback -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-to-slf4j</artifactId>
+    <version>2.23.1</version>
+</dependency>
 
-        <!-- Logging a archivo (ver logback.xml); version compatible con el slf4j-api 1.7.x que ya trae HikariCP -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
-        <!-- Pruebas unitarias -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
+<!-- Apache Commons IO & Lang3 (para manejo seguro de archivos y fórmulas) -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>3.17.0</version>
+</dependency>
+<dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>2.17.0</version>
+</dependency>
     </dependencies>
 
     <build>
