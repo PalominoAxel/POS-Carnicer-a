@@ -29,6 +29,10 @@
         <jbcrypt.version>0.4</jbcrypt.version>
         <controlsfx.version>11.2.1</controlsfx.version>
         <atlantafx.version>2.0.1</atlantafx.version>
+        <logback.version>1.2.13</logback.version>
+        <guava.version>33.3.1-jre</guava.version>
+        <junit.version>5.10.2</junit.version>
+        <mockito.version>5.11.0</mockito.version>
     </properties>
 
     <dependencies>
@@ -109,6 +113,34 @@
     <artifactId>commons-io</artifactId>
     <version>2.17.0</version>
 </dependency>
+
+        <!-- Logging a archivo (ver logback.xml). Se restaura: lo usan MainApp, LoginController y los DAO -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+        <!-- Google Guava. Se restaura: lo usan VentaService y ReporteExcelService -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
+        <!-- Pruebas unitarias (src/test). Se restauran para que "mvn test" y el CI funcionen -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

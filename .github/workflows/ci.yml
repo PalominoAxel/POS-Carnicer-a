@@ -1,0 +1,46 @@
+# Integracion continua: compila y corre las pruebas en cada push y cada Pull Request.
+# Si algo se rompe (por ejemplo, una dependencia que se borro del pom.xml en un merge),
+# el PR muestra una X roja antes de llegar a main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar y probar (Java 17)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compilar y ejecutar pruebas
+        run: mvn -B verify -Djava.awt.headless=true -DargLine="-Djava.awt.headless=true"
+
+      - name: Guardar reportes de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-pruebas
+          path: target/surefire-reports/
+          if-no-files-found: ignore
+
+      - name: Guardar jar ejecutable
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pos-dontoribio-jar
+          path: target/pos-dontoribio.jar
+          if-no-files-found: ignore

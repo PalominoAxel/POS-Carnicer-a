@@ -129,30 +129,6 @@ public class HistorialVentasController {
         labelResumen.setText(ventas.size() + " venta(s) hoy - Total: S/ " + total.setScale(2, RoundingMode.HALF_UP));
     }
 
-    /** Exporta a Excel (.xlsx, Apache POI) las ventas que se estan mostrando en la tabla. */
-    @FXML
-    private void onExportarExcel() {
-        if (ventasActuales.isEmpty()) {
-            new Alert(Alert.AlertType.INFORMATION, "No hay ventas en el rango seleccionado para exportar").showAndWait();
-            return;
-        }
-        FileChooser selector = new FileChooser();
-        selector.setTitle("Guardar reporte de ventas");
-        selector.setInitialFileName(ReporteExcelService.nombreArchivoSugerido(desdeActual, hastaActual));
-        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Libro de Excel (*.xlsx)", "*.xlsx"));
-        File archivo = selector.showSaveDialog(tablaVentas.getScene().getWindow());
-        if (archivo == null) {
-            return; // el usuario cancelo
-        }
-        try {
-            reporteExcelService.exportarVentas(ventasActuales, desdeActual, hastaActual, archivo.toPath());
-            new Alert(Alert.AlertType.INFORMATION, "Reporte guardado en:\n" + archivo.getAbsolutePath()).showAndWait();
-        } catch (IOException e) {
-            LOG.error("No se pudo exportar el reporte de ventas a {}", archivo, e);
-            new Alert(Alert.AlertType.ERROR, "No se pudo guardar el archivo: " + e.getMessage()).showAndWait();
-        }
-    }
-
     private void verComprobante(Venta ventaResumen) {
         ventaDAO.buscarVentaCompleta(ventaResumen.getId()).ifPresentOrElse(ventaCompleta -> {
             String ticket = TicketGeneratorService.generar(ventaCompleta, ventaCompleta.getUsuario(), null, null);

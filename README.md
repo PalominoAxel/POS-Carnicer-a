@@ -1,5 +1,8 @@
 # Don Toribio POS — Sistema de punto de venta para carnicería
 
+[![CI](https://github.com/PalominoAxel/POS-Carnicer-a/actions/workflows/ci.yml/badge.svg)](https://github.com/PalominoAxel/POS-Carnicer-a/actions/workflows/ci.yml)
+[![Abrir en GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PalominoAxel/POS-Carnicer-a?quickstart=1)
+
 ![Java](https://img.shields.io/badge/Java-17-orange) ![JavaFX](https://img.shields.io/badge/JavaFX-21-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Base_de_datos-336791) ![Maven](https://img.shields.io/badge/Maven-Gesti%C3%B3n_de_dependencias-red)
 
 ## 1. Descripción general
@@ -219,7 +222,18 @@ El proyecto proporciona una base para digitalizar las operaciones de una carnice
 
 Estas ideas se presentan como **posibles mejoras futuras**, no como funcionalidades ya implementadas.
 
-## 13. Repositorio y documentación adicional
+## 13. Control de versiones: Git, GitHub y Codespaces
+
+| Herramienta | Como se usa en este proyecto |
+|-------------|------------------------------|
+| **Git** | Historial de cambios, ramas `feature/*` / `fix/*`, `.gitignore` y `.gitattributes` para no versionar binarios ni claves. |
+| **GitHub** | Repositorio central del equipo, Pull Requests con plantilla y revision, Issues con plantillas, CODEOWNERS y Releases con etiquetas `vX.Y.Z`. |
+| **GitHub Actions** | Workflow `CI` (`.github/workflows/ci.yml`) que compila y corre `mvn verify` en cada push y PR. |
+| **Codespaces** | Entorno en la nube definido en `.devcontainer/` con Java 17, Maven y escritorio noVNC para ver la app. |
+
+Guia completa del flujo de trabajo: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 14. Repositorio y documentación adicional
 
 - [Repositorio del proyecto](https://github.com/PalominoAxel/POS-Carnicer-a)
 - [Historial de commits](https://github.com/PalominoAxel/POS-Carnicer-a/commits/principal/)
