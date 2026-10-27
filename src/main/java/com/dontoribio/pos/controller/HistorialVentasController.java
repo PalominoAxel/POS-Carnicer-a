@@ -6,12 +6,15 @@ import com.dontoribio.pos.model.Pago;
 import com.dontoribio.pos.model.Venta;
 import com.dontoribio.pos.service.ReporteExcelService;
 import com.dontoribio.pos.service.TicketGeneratorService;
+import com.dontoribio.pos.service.ReporteVentasExcelService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import java.io.File;
+import java.io.IOException;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,16 +24,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** Controlador del historial de ventas por rango de fechas, con opcion para reimprimir el comprobante de cada venta. */
+
+/** Controlador del historial de ventas del dia, con opcion para reimprimir el comprobante de cada venta. */
 public class HistorialVentasController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HistorialVentasController.class);
-    private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     @FXML
     private TableView<Venta> tablaVentas;
     @FXML
-    private TableColumn<Venta, String> colFechaHora;
+    private TableColumn<Venta, String> colHora;
     @FXML
     private TableColumn<Venta, String> colCliente;
     @FXML
@@ -43,23 +46,14 @@ public class HistorialVentasController {
     private TableColumn<Venta, Void> colVer;
     @FXML
     private Label labelResumen;
-    @FXML
-    private DatePicker datePickerDesde;
-    @FXML
-    private DatePicker datePickerHasta;
 
     private final VentaDAO ventaDAO = new VentaDAOImpl();
-    private final ReporteExcelService reporteExcelService = new ReporteExcelService();
-
-    /** Rango y ventas actualmente mostrados en la tabla (lo que se exporta a Excel). */
-    private LocalDate desdeActual = LocalDate.now();
-    private LocalDate hastaActual = LocalDate.now();
-    private List<Venta> ventasActuales = List.of();
+    private final ReporteVentasExcelService reportesService = new ReporteVentasExcelService();
 
     @FXML
     private void initialize() {
-        colFechaHora.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getFecha().format(FORMATO_FECHA_HORA)));
+        colHora.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getFecha().format(FORMATO_HORA)));
         colCliente.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleStringProperty(data.getValue().getCliente().getNombreRazonSocial()));
         colTotal.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(
@@ -86,44 +80,53 @@ public class HistorialVentasController {
             }
         });
 
-        datePickerDesde.setValue(LocalDate.now());
-        datePickerHasta.setValue(LocalDate.now());
-        cargarVentasDeRango(LocalDate.now(), LocalDate.now());
+        cargarVentasDelDia();
     }
 
-    @FXML
-    private void onBuscarRango() {
-        LocalDate desde = datePickerDesde.getValue();
-        LocalDate hasta = datePickerHasta.getValue();
-        if (desde == null || hasta == null) {
-            new Alert(Alert.AlertType.WARNING, "Seleccione la fecha de inicio y la fecha de fin").showAndWait();
-            return;
-        }
-        if (desde.isAfter(hasta)) {
-            new Alert(Alert.AlertType.WARNING, "La fecha de inicio no puede ser posterior a la fecha de fin").showAndWait();
-            return;
-        }
-        cargarVentasDeRango(desde, hasta);
-    }
+    private void cargarVentasDelDia() {
+        // En lugar de llamar a ventaDAO.listarPorFecha(LocalDate.now()); cargamos datos de prueba:
+        java.util.List<Venta> ventas = new java.util.ArrayList<>();
 
-    @FXML
-    private void onIrAHoy() {
-        datePickerDesde.setValue(LocalDate.now());
-        datePickerHasta.setValue(LocalDate.now());
-        cargarVentasDeRango(LocalDate.now(), LocalDate.now());
-    }
+        // Venta 1: Minorista
+        Venta v1 = new Venta();
+        v1.setId(101L);
+        v1.setFecha(java.time.LocalDateTime.now().minusHours(3));
+        v1.setTotalesPersistidos(new java.math.BigDecimal("185.50"), new java.math.BigDecimal("185.50"));
+        v1.setTipoComprobante(com.dontoribio.pos.model.TipoComprobante.BOLETA);
+        com.dontoribio.pos.model.Cliente c1 = new com.dontoribio.pos.model.Cliente();
+        c1.setNombreRazonSocial("Juan Pérez");
+        v1.setCliente(c1);
+        v1.agregarPago(new com.dontoribio.pos.model.Pago(com.dontoribio.pos.model.MetodoPago.EFECTIVO, new java.math.BigDecimal("185.50"), "EFE-01"));
+        ventas.add(v1);
 
-    private void cargarVentasDeRango(LocalDate desde, LocalDate hasta) {
-        var ventas = ventaDAO.listarPorRangoFechas(desde, hasta);
-        desdeActual = desde;
-        hastaActual = hasta;
-        ventasActuales = ventas;
+        // Venta 2: Mayorista / Restaurante
+        Venta v2 = new Venta();
+        v2.setId(102L);
+        v2.setFecha(java.time.LocalDateTime.now().minusHours(2));
+        v2.setTotalesPersistidos(new java.math.BigDecimal("490.00"), new java.math.BigDecimal("490.00"));
+        v2.setTipoComprobante(com.dontoribio.pos.model.TipoComprobante.FACTURA);
+        com.dontoribio.pos.model.Cliente c2 = new com.dontoribio.pos.model.Cliente();
+        c2.setNombreRazonSocial("Restaurante Sabor Criollo");
+        v2.setCliente(c2);
+        v2.agregarPago(new com.dontoribio.pos.model.Pago(com.dontoribio.pos.model.MetodoPago.YAPE, new java.math.BigDecimal("490.00"), "YAPE-9841"));
+        ventas.add(v2);
+
+        // Venta 3: Minimarket
+        Venta v3 = new Venta();
+        v3.setId(103L);
+        v3.setFecha(java.time.LocalDateTime.now().minusMinutes(45));
+        v3.setTotalesPersistidos(new java.math.BigDecimal("1250.00"), new java.math.BigDecimal("1250.00"));
+        v3.setTipoComprobante(com.dontoribio.pos.model.TipoComprobante.BOLETA);
+        com.dontoribio.pos.model.Cliente c3 = new com.dontoribio.pos.model.Cliente();
+        c3.setNombreRazonSocial("Minimarket El Sol");
+        v3.setCliente(c3);
+        v3.agregarPago(new com.dontoribio.pos.model.Pago(com.dontoribio.pos.model.MetodoPago.TARJETA, new java.math.BigDecimal("1250.00"), "OP-4412"));
+        ventas.add(v3);
+
+        // Poblar la tabla de JavaFX
         tablaVentas.setItems(FXCollections.observableArrayList(ventas));
         var total = ventas.stream().map(Venta::getTotal).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-        String etiquetaPeriodo = desde.equals(hasta)
-                ? (desde.equals(LocalDate.now()) ? "hoy" : "el " + desde)
-                : "del " + desde + " al " + hasta;
-        labelResumen.setText(ventas.size() + " venta(s) " + etiquetaPeriodo + " - Total: S/ " + total.setScale(2, RoundingMode.HALF_UP));
+        labelResumen.setText(ventas.size() + " venta(s) hoy - Total: S/ " + total.setScale(2, RoundingMode.HALF_UP));
     }
 
     /** Exporta a Excel (.xlsx, Apache POI) las ventas que se estan mostrando en la tabla. */
@@ -155,5 +158,38 @@ public class HistorialVentasController {
             String ticket = TicketGeneratorService.generar(ventaCompleta, ventaCompleta.getUsuario(), null, null);
             TicketGeneratorService.mostrarVistaPrevia(ticket);
         }, () -> new Alert(Alert.AlertType.ERROR, "No se pudo cargar el comprobante de la venta").showAndWait());
+    }
+    @FXML
+private void onExportarExcelClicked() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Guardar Reporte de Ventas en Excel");
+    fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Archivos Excel (*.xlsx)", "*.xlsx")
+    );
+    fileChooser.setInitialFileName("reporte_ventas_dontoribio.xlsx");
+
+    // Tomamos la ventana actual a través de la tabla de ventas
+    Stage stage = (Stage) tablaVentas.getScene().getWindow();
+    File destino = fileChooser.showSaveDialog(stage);
+
+    if (destino != null) {
+        try {
+            // tablaVentas.getItems() obtiene la lista de ventas que se está mostrando actualmente
+            reportesService.exportarHistorialVentas(tablaVentas.getItems(), destino);
+            
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Exportación Exitosa");
+            alert.setHeaderText(null);
+            alert.setContentText("El reporte Excel se guardó correctamente en:\n" + destino.getAbsolutePath());
+            alert.showAndWait();
+
+        } catch (IOException e) {
+            Alert alertError = new Alert(Alert.AlertType.ERROR);
+            alertError.setTitle("Error de Exportación");
+            alertError.setHeaderText("No se pudo generar el archivo");
+            alertError.setContentText("Detalle técnico: " + e.getMessage());
+            alertError.showAndWait();
+        }
+    }
     }
 }
