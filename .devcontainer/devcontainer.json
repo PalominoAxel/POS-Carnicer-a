@@ -1,0 +1,44 @@
+{
+  // Entorno de desarrollo en la nube para GitHub Codespaces (y VS Code Dev Containers).
+  // Trae Java 17 + Maven listos y un escritorio ligero (noVNC) para ver la app JavaFX
+  // desde el navegador. La app usa H2 embebido, asi que no hace falta instalar PostgreSQL.
+  "name": "Don Toribio POS (Java 17 + Maven)",
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "none",
+      "installMaven": "true"
+    },
+    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+  },
+
+  // 6080 = escritorio remoto (noVNC) donde se abre la ventana de JavaFX
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": { "label": "Escritorio (noVNC)", "onAutoForward": "notify" }
+  },
+
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb"
+  },
+
+  // Descarga dependencias y compila una sola vez al crear el Codespace
+  "postCreateCommand": "mvn -B -q -DskipTests compile",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-maven",
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "files.eol": "\n"
+      }
+    }
+  }
+}
