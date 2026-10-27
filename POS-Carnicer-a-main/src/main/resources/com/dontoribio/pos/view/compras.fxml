@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.dontoribio.pos.controller.ComprasController">
+
+    <top>
+        <VBox spacing="10.0" styleClass="panel-pesaje">
+            <padding>
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+
+            <Label styleClass="etiqueta-seccion" text="Recepcion de compra / Ingreso de mercaderia" />
+
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Proveedor:" />
+                <ComboBox fx:id="comboProveedor" prefWidth="220.0" />
+                <Button onAction="#onNuevoProveedor" text="Nuevo proveedor" />
+            </HBox>
+
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Producto:" />
+                <ComboBox fx:id="comboProducto" prefWidth="220.0" />
+                <Button onAction="#onNuevoProducto" text="Nuevo producto" />
+                <Label text="Peso/Cant (kg):" />
+                <TextField fx:id="campoPeso" prefWidth="80.0" />
+                <Label text="Costo/kg (S/):" />
+                <TextField fx:id="campoCosto" prefWidth="80.0" />
+                <Button onAction="#onAgregarDetalle" styleClass="boton-primario" text="Agregar a compra" />
+            </HBox>
+
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Lote (opcional):" />
+                <TextField fx:id="campoLote" prefWidth="120.0" />
+                <Label text="Fecha produccion (opcional):" />
+                <DatePicker fx:id="campoFechaProduccion" prefWidth="140.0" />
+                <Label text="Fecha vencimiento (opcional):" />
+                <DatePicker fx:id="campoFechaVencimiento" prefWidth="140.0" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="tablaDetalle">
+            <columns>
+                <TableColumn fx:id="colProducto" text="Producto" prefWidth="220.0" />
+                <TableColumn fx:id="colPeso" text="Peso (kg)" prefWidth="100.0" />
+                <TableColumn fx:id="colCosto" text="Costo/kg" prefWidth="100.0" />
+                <TableColumn fx:id="colImporte" text="Importe" prefWidth="100.0" />
+                <TableColumn fx:id="colLote" text="Lote" prefWidth="90.0" />
+                <TableColumn fx:id="colFechaProduccion" text="Fecha produccion" prefWidth="110.0" />
+                <TableColumn fx:id="colFechaVencimiento" text="Fecha vencimiento" prefWidth="110.0" />
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <HBox spacing="15.0" alignment="CENTER_RIGHT" styleClass="panel-pesaje">
+            <padding>
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+            <Button onAction="#onEliminarDetalle" text="Eliminar item" />
+            <Label fx:id="labelTotal" styleClass="label-total" text="Total: S/ 0.00" />
+            <Button onAction="#onRegistrarCompra" styleClass="boton-cobrar" text="Registrar Compra" />
+        </HBox>
+    </bottom>
+</BorderPane>

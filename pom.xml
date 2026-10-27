@@ -32,6 +32,7 @@
         <logback.version>1.2.13</logback.version>
         <guava.version>33.3.1-jre</guava.version>
         <poi.version>5.3.0</poi.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
     </properties>
@@ -89,6 +90,13 @@
             <groupId>io.github.mkpaz</groupId>
             <artifactId>atlantafx-base</artifactId>
             <version>${atlantafx.version}</version>
+        </dependency>
+
+        <!-- Apache Commons Lang: StringUtils y NumberUtils (cadenas y decimales) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- Logging a archivo (ver logback.xml); version compatible con el slf4j-api 1.7.x que ya trae HikariCP -->

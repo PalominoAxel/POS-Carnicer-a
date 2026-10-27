@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.dontoribio.pos.controller.GestionUsuariosController">
+
+    <center>
+        <TableView fx:id="tablaUsuarios">
+            <columns>
+                <TableColumn fx:id="colNombreCompleto" text="Nombre completo" prefWidth="220.0" />
+                <TableColumn fx:id="colUsername" text="Usuario" prefWidth="130.0" />
+                <TableColumn fx:id="colRol" text="Rol" prefWidth="110.0" />
+                <TableColumn fx:id="colActivo" text="Activo" prefWidth="60.0" />
+            </columns>
+        </TableView>
+    </center>
+
+    <right>
+        <ScrollPane fitToWidth="true" prefWidth="300.0" styleClass="panel-pesaje">
+        <VBox spacing="10.0" prefWidth="280.0" styleClass="panel-pesaje">
+            <padding>
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+
+            <Label styleClass="etiqueta-seccion" text="Ficha del usuario" />
+
+            <Label text="Nombre completo:" />
+            <TextField fx:id="campoNombreCompleto" />
+
+            <Label text="Usuario:" />
+            <TextField fx:id="campoUsername" />
+
+            <Label text="Rol:" />
+            <ComboBox fx:id="comboRol" maxWidth="Infinity" />
+
+            <CheckBox fx:id="checkActivo" text="Activo" selected="true" />
+
+            <Label styleClass="etiqueta-seccion" text="Contrasena" />
+            <Label text="Deje en blanco para no cambiarla (solo aplica al editar un usuario existente)."
+                   wrapText="true" />
+            <PasswordField fx:id="campoNuevaPassword" promptText="Nueva contrasena" />
+            <PasswordField fx:id="campoConfirmarPassword" promptText="Confirmar nueva contrasena" />
+
+            <HBox spacing="6.0">
+                <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#onNuevoUsuario" text="Nuevo" />
+                <Button fx:id="botonGuardar" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                        onAction="#onGuardar" styleClass="boton-primario" text="Crear usuario" />
+            </HBox>
+            <Button maxWidth="Infinity" onAction="#onCerrar" text="Cerrar" />
+        </VBox>
+        </ScrollPane>
+    </right>
+</BorderPane>

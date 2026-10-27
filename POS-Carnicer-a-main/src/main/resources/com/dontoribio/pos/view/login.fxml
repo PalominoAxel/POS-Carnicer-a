@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.dontoribio.pos.control.CampoPasswordVisible?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="14.0" styleClass="root-login"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.dontoribio.pos.controller.LoginController">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label styleClass="titulo" text="DON TORIBIO S.A.C." />
+    <Label styleClass="subtitulo" text="Punto de Venta y Control de Pesaje" />
+
+    <TextField fx:id="campoUsername" promptText="Usuario" />
+    <CampoPasswordVisible fx:id="campoPassword" promptText="Contrasena" />
+
+    <HBox alignment="CENTER" spacing="10.0">
+        <Button fx:id="botonIniciarSesion" defaultButton="true" onAction="#onIniciarSesion" styleClass="boton-primario"
+                text="Iniciar sesion" />
+        <Button onAction="#onAbrirCrearUsuario" text="Crear usuario" />
+    </HBox>
+
+    <Label fx:id="labelError" styleClass="label-error" />
+
+    <Hyperlink fx:id="enlaceOlvidoPassword" onAction="#onAbrirRecuperacion" text="Olvide mi contrasena" />
+
+    <VBox fx:id="panelBloqueo" alignment="CENTER" spacing="8.0" managed="false" styleClass="panel-recuperacion" visible="false">
+        <Label fx:id="labelBloqueo" styleClass="label-error" wrapText="true" />
+        <CampoPasswordVisible fx:id="campoCodigoDesbloqueo" promptText="Codigo de autenticacion" />
+        <Button onAction="#onDesbloquearConCodigo" text="Desbloquear con codigo" />
+    </VBox>
+
+    <VBox fx:id="panelRecuperacion" alignment="CENTER" spacing="8.0" managed="false" styleClass="panel-recuperacion" visible="false">
+        <Label styleClass="etiqueta-seccion" text="Restablecer contrasena olvidada" wrapText="true" />
+        <TextField fx:id="campoUsernameRecuperacion" promptText="Usuario" />
+        <CampoPasswordVisible fx:id="campoNuevaPassword" promptText="Nueva contrasena" />
+        <CampoPasswordVisible fx:id="campoConfirmarPassword" promptText="Confirmar nueva contrasena" />
+        <CampoPasswordVisible fx:id="campoCodigoRecuperacion" promptText="Codigo de autenticacion" />
+        <Label fx:id="labelErrorRecuperacion" styleClass="label-error" wrapText="true" />
+        <HBox alignment="CENTER" spacing="10.0">
+            <Button fx:id="botonCambiarPasswordOlvidada" defaultButton="false" onAction="#onCambiarPasswordOlvidada"
+                    styleClass="boton-primario" text="Cambiar contrasena" />
+            <Button onAction="#onCancelarRecuperacion" text="Cancelar" />
+        </HBox>
+    </VBox>
+</VBox>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.dontoribio.pos.controller.MainPOSController">
+
+    <top>
+        <VBox styleClass="barra-superior">
+            <padding>
+                <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+                <Label styleClass="titulo-barra" text="Don Toribio S.A.C. - POS" />
+                <Label fx:id="labelUsuarioActivo" styleClass="label-usuario" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <padding>
+                    <Insets top="8.0" />
+                </padding>
+                <Button onAction="#onAbrirCatalogo" text="Catalogo" />
+                <Button onAction="#onAbrirCompras" text="Compras" />
+                <Button onAction="#onAbrirHistorialVentas" text="Ver historial de ventas" />
+                <Button onAction="#onAbrirControlCaja" text="Control de caja" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <padding>
+                    <Insets top="8.0" />
+                </padding>
+                <Button onAction="#onAbrirGestionUsuarios" text="Gestionar usuarios" />
+                <Button onAction="#onCambiarPassword" text="Cambiar contrasena" />
+                <Button onAction="#onCerrarSesion" text="Cerrar sesion" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <left>
+        <ScrollPane fitToWidth="true" prefWidth="300.0" styleClass="panel-pesaje">
+        <VBox spacing="12.0" styleClass="panel-pesaje" prefWidth="280.0">
+            <padding>
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+
+            <Label styleClass="etiqueta-seccion" text="Visor de Pesaje" />
+            <Label fx:id="labelPesoActual" styleClass="label-peso" text="0.000 kg" />
+            <Label fx:id="labelPrecioKg" text="Precio/kg: S/ --" />
+            <Label fx:id="labelImporteCalculado" styleClass="label-importe" text="S/ 0.00" />
+
+            <Label text="Buscar producto (nombre o codigo):" />
+            <TextField fx:id="campoBuscarProducto" promptText="Ej. panceta, RES-001" />
+
+            <Label text="Producto:" />
+            <ComboBox fx:id="comboProducto" maxWidth="Infinity" onAction="#onProductoSeleccionado" />
+
+            <Label text="Cliente:" />
+            <TextField fx:id="campoNombreCliente" promptText="Nombre del cliente (opcional)" />
+
+            <Label text="Tipo de cliente:" />
+            <ComboBox fx:id="comboTipoCliente" maxWidth="Infinity" />
+
+            <Button maxWidth="Infinity" onAction="#onAgregarPesajeALista"
+                    styleClass="boton-primario" text="Agregar a lista" />
+
+            <Label styleClass="etiqueta-seccion" text="Cortes rapidos" />
+            <TilePane fx:id="tilePaneAtajos" hgap="6.0" vgap="6.0" prefColumns="2" />
+
+            <HBox spacing="6.0">
+                <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#onEliminarItemSeleccionado" text="Eliminar item" />
+                <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#onVaciarListaActiva" text="Vaciar lista" />
+            </HBox>
+
+            <Label styleClass="etiqueta-seccion" text="Comprobante" />
+            <Label text="Tipo de comprobante:" />
+            <ComboBox fx:id="comboTipoComprobante" maxWidth="Infinity" onAction="#onTipoComprobanteSeleccionado" />
+            <TextField fx:id="campoDocumentoCliente" promptText="DNI / RUC del cliente" disable="true" />
+
+            <Label text="Metodo de pago:" />
+            <ComboBox fx:id="comboMetodoPago" maxWidth="Infinity" onAction="#onMetodoPagoSeleccionado" />
+
+            <Label fx:id="labelTotalLista" styleClass="label-total" text="Total: S/ 0.00" />
+
+            <Label text="Efectivo entregado:" />
+            <TextField fx:id="campoEfectivoEntregado" promptText="0.00" />
+            <Label fx:id="labelVuelto" styleClass="label-total" text="Vuelto: S/ 0.00" />
+
+            <Button maxWidth="Infinity" onAction="#onCobrarListaActiva"
+                    styleClass="boton-cobrar" text="Cobrar" />
+        </VBox>
+        </ScrollPane>
+    </left>
+
+    <center>
+        <TabPane fx:id="tabPaneListas" tabClosingPolicy="UNAVAILABLE" />
+    </center>
+</BorderPane>

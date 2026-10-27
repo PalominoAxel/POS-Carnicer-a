@@ -1,0 +1,130 @@
+/*
+ * Hoja de estilos base del POS Don Toribio S.A.C.
+ * Pensada para complementar (no reemplazar) un tema de AtlantaFX aplicado
+ * globalmente via Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet()).
+ */
+
+.root-login {
+    -fx-background-color: -color-bg-default;
+}
+
+.titulo {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #d64541;
+}
+
+.subtitulo {
+    -fx-font-size: 13px;
+    -fx-text-fill: #7b8794;
+}
+
+.label-error {
+    -fx-text-fill: #d64541;
+    -fx-font-size: 12px;
+}
+
+.boton-primario {
+    -fx-background-color: #d64541;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 4;
+}
+
+.boton-primario:hover {
+    -fx-background-color: #b8362f;
+}
+
+.boton-cobrar {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 4;
+}
+
+.boton-cobrar:hover {
+    -fx-background-color: #27ae60;
+}
+
+.barra-superior {
+    -fx-background-color: #1f2933;
+}
+
+.titulo-barra {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.label-usuario {
+    -fx-text-fill: #cbd2d9;
+}
+
+.panel-pesaje {
+    -fx-background-color: #f5f7fa;
+    -fx-border-color: #cbd2d9;
+    -fx-border-width: 0 1 0 0;
+}
+
+.etiqueta-seccion {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #52606d;
+}
+
+.label-peso {
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2933;
+}
+
+.label-importe {
+    -fx-font-size: 20px;
+    -fx-text-fill: #d64541;
+}
+
+.label-total {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2933;
+}
+
+.estado-turno {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 4;
+}
+
+.estado-caja-abierta {
+    -fx-text-fill: white;
+    -fx-background-color: #2ecc71;
+}
+
+.estado-caja-cerrada {
+    -fx-text-fill: white;
+    -fx-background-color: #7b8794;
+}
+
+.panel-recuperacion {
+    -fx-background-color: #f5f7fa;
+    -fx-border-color: #cbd2d9;
+    -fx-border-width: 1;
+    -fx-padding: 12;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.celda-alerta-vencido {
+    -fx-text-fill: white;
+    -fx-background-color: #d64541;
+    -fx-font-weight: bold;
+}
+
+.celda-alerta-proximo {
+    -fx-text-fill: #1f2933;
+    -fx-background-color: #f5b041;
+    -fx-font-weight: bold;
+}

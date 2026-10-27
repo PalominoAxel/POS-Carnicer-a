@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.dontoribio.pos.controller.CatalogoController">
+
+    <top>
+        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="panel-pesaje">
+            <padding>
+                <Insets bottom="12.0" left="15.0" right="15.0" top="12.0" />
+            </padding>
+            <Label text="Buscar (nombre o codigo):" />
+            <TextField fx:id="campoBuscarProducto" prefWidth="220.0" promptText="Ej. panceta, RES-001" />
+            <Label text="Estado:" />
+            <ComboBox fx:id="comboFiltroEstado" prefWidth="130.0" />
+        </HBox>
+    </top>
+
+    <center>
+        <TableView fx:id="tablaProductos">
+            <columns>
+                <TableColumn fx:id="colCodigo" text="Codigo" prefWidth="90.0" />
+                <TableColumn fx:id="colNombre" text="Nombre" prefWidth="200.0" />
+                <TableColumn fx:id="colPrecioMinorista" text="P. Minorista" prefWidth="90.0" />
+                <TableColumn fx:id="colPrecioMayorista" text="P. Mayorista" prefWidth="90.0" />
+                <TableColumn fx:id="colStock" text="Stock (kg)" prefWidth="80.0" />
+                <TableColumn fx:id="colLote" text="Lote" prefWidth="80.0" />
+                <TableColumn fx:id="colFechaProduccion" text="Fecha produccion" prefWidth="110.0" />
+                <TableColumn fx:id="colFechaVencimiento" text="Fecha vencimiento" prefWidth="110.0" />
+                <TableColumn fx:id="colActivo" text="Activo" prefWidth="60.0" />
+                <TableColumn fx:id="colAlerta" text="Alerta" prefWidth="150.0" />
+            </columns>
+        </TableView>
+    </center>
+
+    <right>
+        <ScrollPane fitToWidth="true" prefWidth="300.0" styleClass="panel-pesaje">
+        <VBox spacing="10.0" prefWidth="280.0" styleClass="panel-pesaje">
+            <padding>
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+
+            <Label styleClass="etiqueta-seccion" text="Ficha del producto" />
+
+            <Label text="Codigo:" />
+            <TextField fx:id="campoCodigo" />
+
+            <Label text="Nombre:" />
+            <TextField fx:id="campoNombre" />
+
+            <Label text="Precio/kg minorista (S/):" />
+            <TextField fx:id="campoPrecioMinorista" />
+
+            <Label text="Precio/kg mayorista (S/):" />
+            <TextField fx:id="campoPrecioMayorista" />
+
+            <Label text="Stock disponible (kg):" />
+            <TextField fx:id="campoStock" />
+
+            <Label text="Imagen (ruta local):" />
+            <HBox spacing="6.0">
+                <TextField fx:id="campoImagenPath" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                <Button onAction="#onExaminarImagen" text="..." />
+            </HBox>
+
+            <CheckBox fx:id="checkActivo" text="Activo" selected="true" />
+
+            <Label styleClass="etiqueta-seccion" text="Trazabilidad (ultima compra)" />
+            <Label text="Lote:" />
+            <TextField fx:id="campoLote" />
+            <Label text="Fecha de produccion:" />
+            <DatePicker fx:id="datePickerFechaProduccion" maxWidth="Infinity" />
+            <Label text="Fecha de vencimiento:" />
+            <DatePicker fx:id="datePickerFechaVencimiento" maxWidth="Infinity" />
+            <Label text="Si el producto no tiene compras registradas, estos datos no se podran guardar (registre una compra primero)."
+                   wrapText="true" />
+
+            <Button fx:id="botonEditar" maxWidth="Infinity" onAction="#onEditarProducto" text="Editar" />
+            <Button maxWidth="Infinity" onAction="#onGuardarProducto" styleClass="boton-primario" text="Guardar" />
+            <Button maxWidth="Infinity" onAction="#onDesactivarProducto" text="Desactivar" />
+        </VBox>
+        </ScrollPane>
+    </right>
+</BorderPane>

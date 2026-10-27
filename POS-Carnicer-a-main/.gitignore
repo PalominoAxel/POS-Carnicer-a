@@ -1,0 +1,19 @@
+# Build output de Maven (se regenera con "mvn package"; no debe versionarse)
+target/
+
+# Archivo con credenciales reales de conexion a la base de datos.
+# Cada equipo crea el suyo copiando application.properties.example.
+src/main/resources/application.properties
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Configuracion y skills locales de Claude Code (no son parte de la app)
+.claude/
+.agents/
+
+# Logs generados en runtime (ver logback.xml) y respaldos locales de la base de datos
+logs/
+backups/

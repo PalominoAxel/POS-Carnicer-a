@@ -1,0 +1,26 @@
+# Copia este archivo como "application.properties" en la misma carpeta y completa
+# tus datos reales. Ese archivo NO se versiona (ver .gitignore).
+#
+# No uses el usuario "postgres" (superusuario) aqui: crea el rol restringido
+# con src/main/resources/db/roles.sql y usa sus credenciales.
+db.url=jdbc:postgresql://localhost:5432/dontoribio_pos
+db.user=pos_app
+db.password=CAMBIA_ESTA_CONTRASENA
+db.driver=org.postgresql.Driver
+
+# Configuracion del pool HikariCP
+db.pool.maximumPoolSize=10
+db.pool.minimumIdle=2
+db.pool.connectionTimeout=30000
+db.pool.idleTimeout=600000
+db.pool.maxLifetime=1800000
+db.pool.name=DonToribioPool
+
+# Configuracion de la balanza (puerto serial real)
+balanza.puerto=COM3
+balanza.baudRate=9600
+balanza.modo=SIMULADA
+
+# Clave que se debe ingresar en la pantalla de "Crear usuario" (login) para poder registrar
+# una cuenta nueva. Evita que cualquiera con acceso a la PC cree usuarios sin autorizacion.
+seguridad.clave_recuperacion=CAMBIA_ESTA_CLAVE
