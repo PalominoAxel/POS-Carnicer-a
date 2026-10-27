@@ -22,16 +22,19 @@ public class CajaDAOImpl implements CajaDAO {
 
     @Override
     public Caja abrirCaja(Caja caja) {
-        String sql = "INSERT INTO caja (usuario_id, fecha_apertura, monto_inicial) VALUES (?, ?, ?) RETURNING id";
+        // RETURNING no es portable entre motores (H2 no lo soporta); el id generado se
+        // recupera con getGeneratedKeys(), que funciona igual en H2 y en Postgres.
+        String sql = "INSERT INTO caja (usuario_id, fecha_apertura, monto_inicial) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             LocalDateTime fechaApertura = caja.getFechaApertura() != null ? caja.getFechaApertura() : LocalDateTime.now();
             ps.setLong(1, caja.getUsuario().getId());
             ps.setTimestamp(2, Timestamp.valueOf(fechaApertura));
             ps.setBigDecimal(3, caja.getMontoInicial());
-            try (ResultSet rs = ps.executeQuery()) {
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    caja.setId(rs.getLong("id"));
+                    caja.setId(rs.getLong(1));
                 }
             }
             caja.setFechaApertura(fechaApertura);

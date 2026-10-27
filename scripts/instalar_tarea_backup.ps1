@@ -19,7 +19,7 @@ $disparador = New-ScheduledTaskTrigger -Daily -At "23:30"
 $configuracion = New-ScheduledTaskSettingsSet -StartWhenAvailable -RunOnlyIfNetworkAvailable:$false
 
 Register-ScheduledTask -TaskName $nombreTarea -Action $accion -Trigger $disparador `
-    -Settings $configuracion -Description "Respaldo diario de la base de datos dontoribio_pos (pg_dump)." `
+    -Settings $configuracion -Description "Respaldo diario de la base de datos embebida del POS (H2)." `
     -Force
 
 Write-Output "Tarea '$nombreTarea' instalada. Correra todos los dias a las 23:30."

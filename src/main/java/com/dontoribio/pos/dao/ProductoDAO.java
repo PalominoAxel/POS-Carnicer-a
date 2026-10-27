@@ -29,4 +29,10 @@ public interface ProductoDAO {
      * compra registrada (no hay donde guardar esos datos).
      */
     boolean actualizarTrazabilidad(Long productoId, String lote, LocalDate fechaProduccion, LocalDate fechaVencimiento);
+
+    /**
+     * Genera el siguiente codigo correlativo de una categoria, ej. "RES-011" si el ultimo
+     * codigo de esa categoria ya registrado es "RES-010" (o "RES-001" si no hay ninguno).
+     */
+    String generarSiguienteCodigo(String prefijoCategoria);
 }

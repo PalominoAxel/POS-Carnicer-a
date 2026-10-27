@@ -47,15 +47,18 @@ public class ProveedorDAOImpl implements ProveedorDAO {
 
     @Override
     public Proveedor guardar(Proveedor proveedor) {
-        String sql = "INSERT INTO proveedores (nombre_razon_social, documento, telefono) VALUES (?, ?, ?) RETURNING id";
+        // RETURNING no es portable entre motores (H2 no lo soporta); el id generado se
+        // recupera con getGeneratedKeys(), que funciona igual en H2 y en Postgres.
+        String sql = "INSERT INTO proveedores (nombre_razon_social, documento, telefono) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, proveedor.getNombreRazonSocial());
             ps.setString(2, proveedor.getDocumento());
             ps.setString(3, proveedor.getTelefono());
-            try (ResultSet rs = ps.executeQuery()) {
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    proveedor.setId(rs.getLong("id"));
+                    proveedor.setId(rs.getLong(1));
                 }
             }
         } catch (SQLException e) {

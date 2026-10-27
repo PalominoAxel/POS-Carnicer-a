@@ -80,18 +80,21 @@ public class ClienteDAOImpl implements ClienteDAO {
 
     @Override
     public Cliente guardar(Cliente cliente) {
+        // RETURNING no es portable entre motores (H2 no lo soporta); el id generado se
+        // recupera con getGeneratedKeys(), que funciona igual en H2 y en Postgres.
         String sql = "INSERT INTO clientes (tipo_cliente, nombre_razon_social, documento, telefono, direccion) " +
-                "VALUES (?, ?, ?, ?, ?) RETURNING id";
+                "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, cliente.getTipoCliente().name());
             ps.setString(2, cliente.getNombreRazonSocial());
             ps.setString(3, cliente.getDocumento());
             ps.setString(4, cliente.getTelefono());
             ps.setString(5, cliente.getDireccion());
-            try (ResultSet rs = ps.executeQuery()) {
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    cliente.setId(rs.getLong("id"));
+                    cliente.setId(rs.getLong(1));
                 }
             }
         } catch (SQLException e) {

@@ -1,5 +1,6 @@
 package com.dontoribio.pos.controller;
 
+import com.dontoribio.pos.config.AppPaths;
 import com.dontoribio.pos.dao.ProductoDAO;
 import com.dontoribio.pos.dao.impl.ProductoDAOImpl;
 import com.dontoribio.pos.model.Producto;
@@ -18,11 +19,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -35,7 +37,6 @@ public class CatalogoController {
     private static final String FILTRO_ACTIVOS = "Activos";
     private static final String FILTRO_INACTIVOS = "Inactivos";
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final Path CARPETA_IMAGENES_PRODUCTOS = Paths.get("img", "productos");
     private static final long DIAS_ALERTA_VENCIMIENTO = 7;
 
     @FXML
@@ -88,12 +89,26 @@ public class CatalogoController {
     private DatePicker datePickerFechaVencimiento;
     @FXML
     private Button botonEditar;
+    @FXML
+    private Label labelCambiosPendientes;
+
+    /** Edicion de un producto, todavia no persistida (ver {@link #onGuardarCambiosPendientes()}). */
+    private record CambioPendiente(Producto producto, boolean esNuevo) {
+    }
 
     private final ProductoDAO productoDAO = new ProductoDAOImpl();
     private Producto productoSeleccionado;
     private ObservableList<Producto> productosBase;
     private FilteredList<Producto> productosFiltrados;
     private Usuario usuarioSesion;
+
+    /**
+     * Ediciones de la ficha ya confirmadas con "Guardar en ficha" pero todavia no escritas
+     * en la base de datos (clave = codigo de producto). Permite editar varios productos
+     * seguidos pidiendo la autorizacion de supervisor una sola vez, al final, en vez de una
+     * vez por cada producto guardado.
+     */
+    private final Map<String, CambioPendiente> cambiosPendientes = new LinkedHashMap<>();
 
     /** Recibe el usuario autenticado desde MainPOSController, para pedir autorizacion de supervisor si es cajero. */
     public void setUsuarioSesion(Usuario usuario) {
@@ -171,6 +186,7 @@ public class CatalogoController {
 
         cargarTabla();
         limpiarFormulario();
+        actualizarLabelPendientes();
     }
 
     private void aplicarFiltros() {
@@ -196,9 +212,37 @@ public class CatalogoController {
 
     private void cargarTabla() {
         productosBase = FXCollections.observableArrayList(productoDAO.listarTodos());
+        reaplicarCambiosPendientesEnTabla();
         productosFiltrados = new FilteredList<>(productosBase, p -> true);
         tablaProductos.setItems(productosFiltrados);
         aplicarFiltros();
+    }
+
+    /**
+     * Despues de recargar desde la BD, vuelve a superponer las ediciones todavia
+     * pendientes (ver {@link #cambiosPendientes}) para que no se pierdan de la vista si se
+     * recarga la tabla por otro motivo (p. ej. al desactivar un producto distinto).
+     */
+    private void reaplicarCambiosPendientesEnTabla() {
+        for (CambioPendiente cambio : cambiosPendientes.values()) {
+            if (cambio.esNuevo()) {
+                productosBase.add(cambio.producto());
+                continue;
+            }
+            for (int i = 0; i < productosBase.size(); i++) {
+                if (productosBase.get(i).getCodigo().equalsIgnoreCase(cambio.producto().getCodigo())) {
+                    productosBase.set(i, cambio.producto());
+                    break;
+                }
+            }
+        }
+    }
+
+    private void actualizarLabelPendientes() {
+        int pendientes = cambiosPendientes.size();
+        labelCambiosPendientes.setText(pendientes == 0
+                ? "Sin cambios pendientes"
+                : pendientes + (pendientes == 1 ? " cambio pendiente" : " cambios pendientes"));
     }
 
     @FXML
@@ -253,35 +297,37 @@ public class CatalogoController {
         if (archivo == null) {
             return;
         }
+        Path carpetaDestino = AppPaths.carpetaImagenesProductos().toPath();
         try {
-            String rutaRelativa = copiarImagenACarpetaProductos(archivo.toPath());
-            campoImagenPath.setText(rutaRelativa);
+            String rutaAbsoluta = copiarImagenACarpetaProductos(archivo.toPath(), carpetaDestino);
+            campoImagenPath.setText(rutaAbsoluta);
         } catch (IOException e) {
-            new Alert(Alert.AlertType.ERROR, "No se pudo copiar la imagen a " + CARPETA_IMAGENES_PRODUCTOS
+            new Alert(Alert.AlertType.ERROR, "No se pudo copiar la imagen a " + carpetaDestino
                     + ": " + e.getMessage()).showAndWait();
         }
     }
 
     /**
-     * Copia la imagen elegida a {@value #CARPETA_IMAGENES_PRODUCTOS} (relativa a la carpeta
-     * del proyecto/ejecutable) para que la ruta guardada en la base de datos sea portable
-     * entre equipos, en lugar de la ruta absoluta del archivo original.
+     * Copia la imagen elegida a la carpeta de imagenes de esta instalacion
+     * ({@link AppPaths#carpetaImagenesProductos()}, fuera de la carpeta del programa, para
+     * que sobreviva reinstalaciones) y devuelve la ruta absoluta para guardarla en la BD.
      */
-    private String copiarImagenACarpetaProductos(Path origen) throws IOException {
-        Files.createDirectories(CARPETA_IMAGENES_PRODUCTOS);
-        Path destino = CARPETA_IMAGENES_PRODUCTOS.resolve(origen.getFileName());
+    private String copiarImagenACarpetaProductos(Path origen, Path carpetaDestino) throws IOException {
+        Path destino = carpetaDestino.resolve(origen.getFileName());
         if (!origen.toAbsolutePath().normalize().equals(destino.toAbsolutePath().normalize())) {
             Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
         }
-        return destino.toString().replace('\\', '/');
+        return destino.toAbsolutePath().toString().replace('\\', '/');
     }
 
+    /**
+     * Valida y "apunta" los cambios de la ficha en memoria ({@link #cambiosPendientes}),
+     * sin pedir autorizacion ni tocar la base de datos todavia: eso se hace una sola vez,
+     * para todos los productos pendientes juntos, en {@link #onGuardarCambiosPendientes()}.
+     * La tabla se actualiza al instante para que el cambio se vea, aunque no este guardado.
+     */
     @FXML
     private void onGuardarProducto() {
-        if (!AutorizacionSupervisor.verificarPermiso(usuarioSesion, "modificar el catalogo de productos")) {
-            return;
-        }
-
         String codigo = campoCodigo.getText() == null ? "" : campoCodigo.getText().trim();
         String nombre = campoNombre.getText() == null ? "" : campoNombre.getText().trim();
         if (codigo.isEmpty() || nombre.isEmpty()) {
@@ -301,7 +347,9 @@ public class CatalogoController {
             return;
         }
 
-        boolean editandoExistente = productoSeleccionado != null;
+        // Un producto ya persistido tiene id; uno recien agregado a cambiosPendientes y
+        // vuelto a editar antes de guardarlo todavia no lo tiene, aunque este seleccionado.
+        boolean editandoExistente = productoSeleccionado != null && productoSeleccionado.getId() != null;
         Producto producto = editandoExistente ? productoSeleccionado : new Producto();
         producto.setCodigo(codigo);
         producto.setNombre(nombre);
@@ -314,42 +362,100 @@ public class CatalogoController {
         producto.setActivo(checkActivo.isSelected());
 
         if (editandoExistente) {
-            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Se guardaran los cambios del producto \"" + nombre + "\". Continuar?",
-                    ButtonType.OK, ButtonType.CANCEL);
-            confirmacion.setTitle("Editar producto");
-            confirmacion.setHeaderText(null);
-            Optional<ButtonType> respuesta = confirmacion.showAndWait();
-            if (respuesta.isEmpty() || respuesta.get() != ButtonType.OK) {
-                return;
-            }
+            producto.setLoteActual(campoLote.getText() == null || campoLote.getText().isBlank()
+                    ? null : campoLote.getText().trim());
+            producto.setFechaProduccionActual(datePickerFechaProduccion.getValue());
+            producto.setFechaVencimientoActual(datePickerFechaVencimiento.getValue());
         }
 
-        try {
-            if (editandoExistente) {
-                productoDAO.actualizar(producto);
-            } else {
-                productoDAO.guardar(producto);
-            }
-        } catch (RuntimeException e) {
-            new Alert(Alert.AlertType.ERROR, "No se pudo guardar el producto: " + e.getMessage()).showAndWait();
+        cambiosPendientes.put(codigo, new CambioPendiente(producto, !editandoExistente));
+        if (!editandoExistente && !productosBase.contains(producto)) {
+            productosBase.add(producto);
+        }
+        tablaProductos.refresh();
+        actualizarLabelPendientes();
+        limpiarFormulario();
+    }
+
+    /**
+     * Pide la autorizacion de supervisor UNA SOLA VEZ y recien ahi persiste todos los
+     * productos de {@link #cambiosPendientes}, sin importar cuantos se hayan editado.
+     */
+    @FXML
+    private void onGuardarCambiosPendientes() {
+        if (cambiosPendientes.isEmpty()) {
+            new Alert(Alert.AlertType.INFORMATION, "No hay cambios pendientes para guardar").showAndWait();
+            return;
+        }
+        if (!AutorizacionSupervisor.verificarPermiso(usuarioSesion, "modificar el catalogo de productos")) {
             return;
         }
 
-        if (editandoExistente) {
-            String lote = campoLote.getText() == null || campoLote.getText().isBlank() ? null : campoLote.getText().trim();
-            boolean actualizado = productoDAO.actualizarTrazabilidad(producto.getId(), lote,
-                    datePickerFechaProduccion.getValue(), datePickerFechaVencimiento.getValue());
-            if (!actualizado) {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "El producto se guardo, pero no tiene ninguna compra registrada: el lote y las fechas "
-                                + "no se pudieron guardar. Registre una compra para este producto primero.")
-                        .showAndWait();
+        int total = cambiosPendientes.size();
+        int guardados = 0;
+        StringBuilder errores = new StringBuilder();
+        StringBuilder sinCompraRegistrada = new StringBuilder();
+        for (CambioPendiente cambio : cambiosPendientes.values()) {
+            Producto producto = cambio.producto();
+            try {
+                if (cambio.esNuevo()) {
+                    productoDAO.guardar(producto);
+                } else {
+                    productoDAO.actualizar(producto);
+                    boolean intentaTrazabilidad = producto.getLoteActual() != null
+                            || producto.getFechaProduccionActual() != null
+                            || producto.getFechaVencimientoActual() != null;
+                    boolean trazabilidadGuardada = productoDAO.actualizarTrazabilidad(producto.getId(),
+                            producto.getLoteActual(), producto.getFechaProduccionActual(),
+                            producto.getFechaVencimientoActual());
+                    if (intentaTrazabilidad && !trazabilidadGuardada) {
+                        sinCompraRegistrada.append("- ").append(producto.getNombre()).append('\n');
+                    }
+                }
+                guardados++;
+            } catch (RuntimeException e) {
+                errores.append("- ").append(producto.getNombre()).append(": ").append(e.getMessage()).append('\n');
             }
         }
 
+        cambiosPendientes.clear();
         cargarTabla();
         limpiarFormulario();
+        actualizarLabelPendientes();
+
+        String mensaje = guardados + " de " + total + " producto(s) guardado(s) correctamente.";
+        if (sinCompraRegistrada.length() > 0) {
+            mensaje += "\n\nEl lote/fecha de produccion/fecha de vencimiento NO se pudo guardar en estos "
+                    + "productos porque no tienen ninguna compra registrada (registre una compra en el modulo "
+                    + "de Compras primero):\n" + sinCompraRegistrada;
+        }
+        if (errores.length() > 0) {
+            mensaje += "\n\nNo se pudieron guardar:\n" + errores;
+        }
+        boolean hayAdvertencias = sinCompraRegistrada.length() > 0 || errores.length() > 0;
+        new Alert(hayAdvertencias ? Alert.AlertType.WARNING : Alert.AlertType.INFORMATION, mensaje).showAndWait();
+    }
+
+    /** Descarta todos los cambios de {@link #cambiosPendientes} sin pedir autorizacion ni tocar la base de datos. */
+    @FXML
+    private void onCancelarCambiosPendientes() {
+        if (cambiosPendientes.isEmpty()) {
+            return;
+        }
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION,
+                "Se descartaran " + cambiosPendientes.size() + " cambio(s) pendiente(s) sin guardar. Continuar?",
+                ButtonType.OK, ButtonType.CANCEL);
+        confirmacion.setTitle("Cancelar cambios pendientes");
+        confirmacion.setHeaderText(null);
+        Optional<ButtonType> respuesta = confirmacion.showAndWait();
+        if (respuesta.isEmpty() || respuesta.get() != ButtonType.OK) {
+            return;
+        }
+
+        cambiosPendientes.clear();
+        cargarTabla();
+        limpiarFormulario();
+        actualizarLabelPendientes();
     }
 
     @FXML

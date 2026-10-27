@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.dontoribio.pos.control.CampoPasswordVisible?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -51,14 +51,21 @@
             <Label styleClass="etiqueta-seccion" text="Contrasena" />
             <Label text="Deje en blanco para no cambiarla (solo aplica al editar un usuario existente)."
                    wrapText="true" />
-            <PasswordField fx:id="campoNuevaPassword" promptText="Nueva contrasena" />
-            <PasswordField fx:id="campoConfirmarPassword" promptText="Confirmar nueva contrasena" />
+            <CampoPasswordVisible fx:id="campoNuevaPassword" promptText="Nueva contrasena" />
+            <CampoPasswordVisible fx:id="campoConfirmarPassword" promptText="Confirmar nueva contrasena" />
 
             <HBox spacing="6.0">
                 <Button maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#onNuevoUsuario" text="Nuevo" />
                 <Button fx:id="botonGuardar" maxWidth="Infinity" HBox.hgrow="ALWAYS"
                         onAction="#onGuardar" styleClass="boton-primario" text="Crear usuario" />
             </HBox>
+
+            <Label styleClass="etiqueta-seccion" text="Datos del negocio" />
+            <Button maxWidth="Infinity" onAction="#onCambiarNombreNegocio" text="Cambiar nombre del negocio" />
+            <Label text="Se usa para desbloquear el ingreso, restablecer una contrasena olvidada y crear usuarios desde el login."
+                   wrapText="true" />
+            <Button maxWidth="Infinity" onAction="#onCambiarClaveRecuperacion" text="Cambiar clave de recuperacion" />
+
             <Button maxWidth="Infinity" onAction="#onCerrar" text="Cerrar" />
         </VBox>
         </ScrollPane>

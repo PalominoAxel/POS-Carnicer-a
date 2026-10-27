@@ -26,6 +26,10 @@
             <TextField fx:id="campoBuscarProducto" prefWidth="220.0" promptText="Ej. panceta, RES-001" />
             <Label text="Estado:" />
             <ComboBox fx:id="comboFiltroEstado" prefWidth="130.0" />
+            <Label fx:id="labelCambiosPendientes" text="Sin cambios pendientes" />
+            <Button onAction="#onGuardarCambiosPendientes" styleClass="boton-primario"
+                    text="Guardar cambios" />
+            <Button onAction="#onCancelarCambiosPendientes" text="Cancelar cambios" />
         </HBox>
     </top>
 
@@ -89,7 +93,7 @@
                    wrapText="true" />
 
             <Button fx:id="botonEditar" maxWidth="Infinity" onAction="#onEditarProducto" text="Editar" />
-            <Button maxWidth="Infinity" onAction="#onGuardarProducto" styleClass="boton-primario" text="Guardar" />
+            <Button maxWidth="Infinity" onAction="#onGuardarProducto" text="Agregar a cambios pendientes" />
             <Button maxWidth="Infinity" onAction="#onDesactivarProducto" text="Desactivar" />
         </VBox>
         </ScrollPane>

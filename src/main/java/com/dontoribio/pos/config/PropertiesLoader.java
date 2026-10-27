@@ -5,7 +5,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Lector centralizado de application.properties (classpath).
+ * Lector centralizado de application.properties (classpath). Este archivo es enteramente
+ * OPCIONAL: la app funciona sin el (ver DatabaseConnection, que usa una base de datos
+ * embebida por defecto). Solo existe para quien quiera sobreescribir algun valor a mano
+ * (desarrollo, o apuntar a un Postgres real), asi que su ausencia o un error de lectura
+ * nunca bloquean el arranque: simplemente no hay overrides y se usan los valores por defecto.
  * Se carga una sola vez y se reutiliza en toda la aplicacion.
  */
 public final class PropertiesLoader {
@@ -16,13 +20,12 @@ public final class PropertiesLoader {
     static {
         try (InputStream input = PropertiesLoader.class.getClassLoader()
                 .getResourceAsStream(ARCHIVO_CONFIG)) {
-            if (input == null) {
-                throw new IllegalStateException(
-                        "No se encontro el archivo " + ARCHIVO_CONFIG + " en el classpath");
+            if (input != null) {
+                PROPIEDADES.load(input);
             }
-            PROPIEDADES.load(input);
         } catch (IOException e) {
-            throw new IllegalStateException("Error al leer " + ARCHIVO_CONFIG, e);
+            // Archivo opcional: si esta corrupto, se ignora y se sigue sin overrides en vez
+            // de impedir que la app arranque.
         }
     }
 

@@ -16,7 +16,7 @@
         <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
     </padding>
 
-    <Label styleClass="titulo" text="DON TORIBIO S.A.C." />
+    <Label fx:id="labelNombreNegocio" styleClass="titulo" />
     <Label styleClass="subtitulo" text="Punto de Venta y Control de Pesaje" />
 
     <TextField fx:id="campoUsername" promptText="Usuario" />
@@ -34,7 +34,7 @@
 
     <VBox fx:id="panelBloqueo" alignment="CENTER" spacing="8.0" managed="false" styleClass="panel-recuperacion" visible="false">
         <Label fx:id="labelBloqueo" styleClass="label-error" wrapText="true" />
-        <CampoPasswordVisible fx:id="campoCodigoDesbloqueo" promptText="Codigo de autenticacion" />
+        <CampoPasswordVisible fx:id="campoCodigoDesbloqueo" promptText="Clave de recuperacion" />
         <Button onAction="#onDesbloquearConCodigo" text="Desbloquear con codigo" />
     </VBox>
 
@@ -43,7 +43,7 @@
         <TextField fx:id="campoUsernameRecuperacion" promptText="Usuario" />
         <CampoPasswordVisible fx:id="campoNuevaPassword" promptText="Nueva contrasena" />
         <CampoPasswordVisible fx:id="campoConfirmarPassword" promptText="Confirmar nueva contrasena" />
-        <CampoPasswordVisible fx:id="campoCodigoRecuperacion" promptText="Codigo de autenticacion" />
+        <CampoPasswordVisible fx:id="campoCodigoRecuperacion" promptText="Clave de recuperacion" />
         <Label fx:id="labelErrorRecuperacion" styleClass="label-error" wrapText="true" />
         <HBox alignment="CENTER" spacing="10.0">
             <Button fx:id="botonCambiarPasswordOlvidada" defaultButton="false" onAction="#onCambiarPasswordOlvidada"

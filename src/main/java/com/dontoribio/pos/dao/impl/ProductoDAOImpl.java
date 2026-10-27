@@ -92,10 +92,12 @@ public class ProductoDAOImpl implements ProductoDAO {
 
     @Override
     public Producto guardar(Producto producto) {
+        // RETURNING no es portable entre motores (H2 no lo soporta); el id generado se
+        // recupera con getGeneratedKeys(), que funciona igual en H2 y en Postgres.
         String sql = "INSERT INTO productos (codigo, nombre, imagen_path, precio_kg_minorista, precio_kg_mayorista, " +
-                "unidad_medida, stock_disponible, activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                "unidad_medida, stock_disponible, activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, producto.getCodigo());
             ps.setString(2, producto.getNombre());
             ps.setString(3, producto.getImagenPath());
@@ -104,9 +106,10 @@ public class ProductoDAOImpl implements ProductoDAO {
             ps.setString(6, producto.getUnidadMedida());
             ps.setBigDecimal(7, producto.getStockDisponible());
             ps.setBoolean(8, producto.isActivo());
-            try (ResultSet rs = ps.executeQuery()) {
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    producto.setId(rs.getLong("id"));
+                    producto.setId(rs.getLong(1));
                 }
             }
         } catch (SQLException e) {
@@ -163,6 +166,29 @@ public class ProductoDAOImpl implements ProductoDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Error al actualizar trazabilidad del producto", e);
         }
+    }
+
+    @Override
+    public String generarSiguienteCodigo(String prefijoCategoria) {
+        String sql = "SELECT codigo FROM productos WHERE codigo LIKE ?";
+        int maximo = 0;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, prefijoCategoria + "-%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String sufijo = rs.getString("codigo").substring(prefijoCategoria.length() + 1);
+                    try {
+                        maximo = Math.max(maximo, Integer.parseInt(sufijo));
+                    } catch (NumberFormatException ignorado) {
+                        // Codigo con un sufijo no numerico (dato antiguo o manual); se ignora al calcular el maximo.
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al generar el siguiente codigo de producto", e);
+        }
+        return prefijoCategoria + "-" + String.format("%03d", maximo + 1);
     }
 
     private Producto mapear(ResultSet rs) throws SQLException {

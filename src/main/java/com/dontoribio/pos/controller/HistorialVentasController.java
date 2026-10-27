@@ -4,6 +4,7 @@ import com.dontoribio.pos.dao.VentaDAO;
 import com.dontoribio.pos.dao.impl.VentaDAOImpl;
 import com.dontoribio.pos.model.Pago;
 import com.dontoribio.pos.model.Venta;
+import com.dontoribio.pos.service.ReporteExcelService;
 import com.dontoribio.pos.service.TicketGeneratorService;
 import com.dontoribio.pos.service.ReporteVentasExcelService;
 import javafx.collections.FXCollections;
@@ -15,9 +16,12 @@ import javafx.scene.control.Alert;
 import java.io.File;
 import java.io.IOException;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -123,6 +127,30 @@ public class HistorialVentasController {
         tablaVentas.setItems(FXCollections.observableArrayList(ventas));
         var total = ventas.stream().map(Venta::getTotal).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
         labelResumen.setText(ventas.size() + " venta(s) hoy - Total: S/ " + total.setScale(2, RoundingMode.HALF_UP));
+    }
+
+    /** Exporta a Excel (.xlsx, Apache POI) las ventas que se estan mostrando en la tabla. */
+    @FXML
+    private void onExportarExcel() {
+        if (ventasActuales.isEmpty()) {
+            new Alert(Alert.AlertType.INFORMATION, "No hay ventas en el rango seleccionado para exportar").showAndWait();
+            return;
+        }
+        FileChooser selector = new FileChooser();
+        selector.setTitle("Guardar reporte de ventas");
+        selector.setInitialFileName(ReporteExcelService.nombreArchivoSugerido(desdeActual, hastaActual));
+        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Libro de Excel (*.xlsx)", "*.xlsx"));
+        File archivo = selector.showSaveDialog(tablaVentas.getScene().getWindow());
+        if (archivo == null) {
+            return; // el usuario cancelo
+        }
+        try {
+            reporteExcelService.exportarVentas(ventasActuales, desdeActual, hastaActual, archivo.toPath());
+            new Alert(Alert.AlertType.INFORMATION, "Reporte guardado en:\n" + archivo.getAbsolutePath()).showAndWait();
+        } catch (IOException e) {
+            LOG.error("No se pudo exportar el reporte de ventas a {}", archivo, e);
+            new Alert(Alert.AlertType.ERROR, "No se pudo guardar el archivo: " + e.getMessage()).showAndWait();
+        }
     }
 
     private void verComprobante(Venta ventaResumen) {

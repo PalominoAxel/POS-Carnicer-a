@@ -8,6 +8,17 @@
     -fx-background-color: -color-bg-default;
 }
 
+/*
+ * AtlantaFX (PrimerLight) pone el prompt text transparente al enfocar un campo
+ * (-fx-prompt-text-fill: transparent en .text-input:focused), pensado para un patron de
+ * floating-label que esta app no usa. Eso deja campos vacios con foco (p. ej. el usuario
+ * al abrir el login) sin ninguna pista de que escribir. Se restaura el mismo color que
+ * usa el propio tema para el estado sin foco.
+ */
+.text-input:focused {
+    -fx-prompt-text-fill: -color-fg-subtle;
+}
+
 .titulo {
     -fx-font-size: 26px;
     -fx-font-weight: bold;
