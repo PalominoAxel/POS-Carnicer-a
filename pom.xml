@@ -9,8 +9,8 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Don Toribio POS</name>
-    <description>Software de Punto de Venta y control de pesaje para Comercializadora de Carnes Don Toribio S.A.C.</description>
+    <name>POS Carniceria</name>
+    <description>Software de Punto de Venta y control de pesaje para carnicerias, desarrollado por Viande.</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -23,13 +23,15 @@
 
         <!-- Versiones de dependencias -->
         <javafx.version>21.0.4</javafx.version>
-        <postgresql.version>42.7.4</postgresql.version>
+        <h2.version>2.3.232</h2.version>
         <hikaricp.version>5.1.0</hikaricp.version>
         <jserialcomm.version>2.10.4</jserialcomm.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <controlsfx.version>11.2.1</controlsfx.version>
         <atlantafx.version>2.0.1</atlantafx.version>
         <logback.version>1.2.13</logback.version>
+        <guava.version>33.3.1-jre</guava.version>
+        <poi.version>5.3.0</poi.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
     </properties>
@@ -47,11 +49,11 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- Driver JDBC PostgreSQL -->
+        <!-- Base de datos embebida en archivo (sin servidor que instalar), en modo PostgreSQL -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
         </dependency>
 
         <!-- Pool de conexiones de alto rendimiento -->
@@ -94,6 +96,20 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+        </dependency>
+
+        <!-- Google Guava: Preconditions, Strings, Joiner, colecciones inmutables y Multimap -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
+        <!-- Apache POI: generacion de reportes Excel (.xlsx) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
         </dependency>
 
         <!-- Pruebas unitarias -->

@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.dontoribio</groupId>
   <artifactId>pos-dontoribio</artifactId>
-  <name>Don Toribio POS</name>
+  <name>POS Carniceria</name>
   <version>1.0.0-SNAPSHOT</version>
-  <description>Software de Punto de Venta y control de pesaje para Comercializadora de Carnes Don Toribio S.A.C.</description>
+  <description>Software de Punto de Venta y control de pesaje para carnicerias, desarrollado por Viande.</description>
   <build>
     <finalName>pos-dontoribio</finalName>
     <plugins>
@@ -102,7 +102,9 @@
   </dependencies>
   <properties>
     <mainClass>com.dontoribio.pos.MainApp</mainClass>
+    <guava.version>33.3.1-jre</guava.version>
     <jbcrypt.version>0.4</jbcrypt.version>
+    <poi.version>5.3.0</poi.version>
     <mainModuleName>com.dontoribio.pos</mainModuleName>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <javafx.version>21.0.4</javafx.version>
@@ -112,9 +114,9 @@
     <logback.version>1.2.13</logback.version>
     <hikaricp.version>5.1.0</hikaricp.version>
     <maven.compiler.source>17</maven.compiler.source>
+    <h2.version>2.3.232</h2.version>
     <atlantafx.version>2.0.1</atlantafx.version>
     <mockito.version>5.11.0</mockito.version>
     <maven.compiler.target>17</maven.compiler.target>
-    <postgresql.version>42.7.4</postgresql.version>
   </properties>
 </project>

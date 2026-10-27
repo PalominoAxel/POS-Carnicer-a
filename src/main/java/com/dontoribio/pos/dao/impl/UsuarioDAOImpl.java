@@ -6,6 +6,7 @@ import com.dontoribio.pos.model.Rol;
 import com.dontoribio.pos.model.Usuario;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +19,11 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public Optional<Usuario> buscarPorUsername(String username) {
+        // Comparacion case-insensitive: evita que "Juan" y "juan" se traten como cuentas
+        // distintas (tanto para encontrar la cuenta correcta al loguear como para bloquear
+        // duplicados al crear usuarios).
         String sql = "SELECT id, username, password_hash, nombre_completo, rol, activo, fecha_creacion " +
-                "FROM usuarios WHERE username = ?";
+                "FROM usuarios WHERE LOWER(username) = LOWER(?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
@@ -50,22 +54,35 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public Usuario guardar(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (username, password_hash, nombre_completo, rol, activo) " +
-                "VALUES (?, ?, ?, ?, ?) RETURNING id, fecha_creacion";
+        // fecha_creacion se fija aqui (en vez de dejarla al DEFAULT NOW() de la columna) para
+        // poder leerla de vuelta sin una segunda consulta: RETURNING no es portable entre
+        // motores (H2 no lo soporta), asi que el id se recupera con getGeneratedKeys().
+        LocalDateTime fechaCreacion = LocalDateTime.now();
+        String sql = "INSERT INTO usuarios (username, password_hash, nombre_completo, rol, activo, fecha_creacion) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, usuario.getUsername());
             ps.setString(2, usuario.getPasswordHash());
             ps.setString(3, usuario.getNombreCompleto());
             ps.setString(4, usuario.getRol().name());
             ps.setBoolean(5, usuario.isActivo());
-            try (ResultSet rs = ps.executeQuery()) {
+            ps.setTimestamp(6, Timestamp.valueOf(fechaCreacion));
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    usuario.setId(rs.getLong("id"));
-                    usuario.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+                    usuario.setId(rs.getLong(1));
+                    usuario.setFechaCreacion(fechaCreacion);
                 }
             }
         } catch (SQLException e) {
+            // 23505 = unique_violation en Postgres: dos altas casi simultaneas con el mismo
+            // username pueden pasar el chequeo previo en la app y chocar recien aqui, en la BD
+            // (que es quien realmente lo garantiza). Se traduce a un mensaje claro en vez del
+            // error crudo de SQL.
+            if ("23505".equals(e.getSQLState())) {
+                throw new RuntimeException("Ya existe un usuario con ese nombre, elija otro", e);
+            }
             throw new RuntimeException("Error al guardar usuario", e);
         }
         return usuario;

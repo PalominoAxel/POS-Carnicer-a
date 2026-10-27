@@ -21,7 +21,7 @@
                 <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
             </padding>
             <HBox alignment="CENTER_LEFT" spacing="20.0">
-                <Label styleClass="titulo-barra" text="Don Toribio S.A.C. - POS" />
+                <Label fx:id="labelNombreNegocio" styleClass="titulo-barra" />
                 <Label fx:id="labelUsuarioActivo" styleClass="label-usuario" />
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -31,6 +31,7 @@
                 <Button onAction="#onAbrirCatalogo" text="Catalogo" />
                 <Button onAction="#onAbrirCompras" text="Compras" />
                 <Button onAction="#onAbrirHistorialVentas" text="Ver historial de ventas" />
+                <Button onAction="#onAbrirHistorialCompras" text="Ver historial de compras" />
                 <Button onAction="#onAbrirControlCaja" text="Control de caja" />
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -60,7 +61,8 @@
             <TextField fx:id="campoBuscarProducto" promptText="Ej. panceta, RES-001" />
 
             <Label text="Producto:" />
-            <ComboBox fx:id="comboProducto" maxWidth="Infinity" onAction="#onProductoSeleccionado" />
+            <ComboBox fx:id="comboProducto" maxWidth="Infinity" onAction="#onProductoSeleccionado"
+                      promptText="Seleccione un producto" />
 
             <Label text="Cliente:" />
             <TextField fx:id="campoNombreCliente" promptText="Nombre del cliente (opcional)" />
@@ -85,7 +87,8 @@
             <TextField fx:id="campoDocumentoCliente" promptText="DNI / RUC del cliente" disable="true" />
 
             <Label text="Metodo de pago:" />
-            <ComboBox fx:id="comboMetodoPago" maxWidth="Infinity" onAction="#onMetodoPagoSeleccionado" />
+            <ComboBox fx:id="comboMetodoPago" maxWidth="Infinity" onAction="#onMetodoPagoSeleccionado"
+                      promptText="Seleccione un metodo de pago" />
 
             <Label fx:id="labelTotalLista" styleClass="label-total" text="Total: S/ 0.00" />
 

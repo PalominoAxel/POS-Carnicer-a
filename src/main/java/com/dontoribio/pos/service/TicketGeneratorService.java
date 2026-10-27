@@ -1,15 +1,15 @@
 package com.dontoribio.pos.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import com.dontoribio.pos.model.Compra;
 import com.dontoribio.pos.model.DetalleCompra;
 import com.dontoribio.pos.model.DetalleVenta;
 import com.dontoribio.pos.model.TipoComprobante;
 import com.dontoribio.pos.model.Usuario;
 import com.dontoribio.pos.model.Venta;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Genera el texto de la boleta de venta en formato monoespaciado,
@@ -19,8 +19,8 @@ public final class TicketGeneratorService {
 
     private static final int ANCHO = 42;
     private static final String RAZON_SOCIAL = "DON TORIBIO S.A.C.";
-    private static final String RUC = "RUC: 20123456789";
-    private static final String DIRECCION = "Av. Los Carniceros 123 - Lima";
+    private static final String RUC = "RUC: 10763361859";
+    private static final String DIRECCION = "Jr. Adromeda 768 - Lima";
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private TicketGeneratorService() {
@@ -110,8 +110,16 @@ public final class TicketGeneratorService {
         }
         sb.append(linea()).append('\n');
 
-        sb.append(filaMonto("Subtotal:", venta.getSubtotal())).append('\n');
-        sb.append(filaMonto("TOTAL:", venta.getTotal())).append('\n');
+        // Boleta y Factura son comprobantes fiscales: el IGV (incluido en los precios) se
+        // desglosa. El Ticket simple no es un comprobante fiscal, se mantiene como esta.
+        if (venta.getTipoComprobante() == TipoComprobante.BOLETA || venta.getTipoComprobante() == TipoComprobante.FACTURA) {
+            sb.append(filaMonto("Valor venta:", venta.getValorVenta())).append('\n');
+            sb.append(filaMonto("IGV (18%):", venta.getIgv())).append('\n');
+            sb.append(filaMonto("TOTAL:", venta.getTotal())).append('\n');
+        } else {
+            sb.append(filaMonto("Subtotal:", venta.getSubtotal())).append('\n');
+            sb.append(filaMonto("TOTAL:", venta.getTotal())).append('\n');
+        }
         if (montoRecibido != null) {
             sb.append(filaMonto("Recibido:", montoRecibido)).append('\n');
         }

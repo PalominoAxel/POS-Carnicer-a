@@ -1,12 +1,15 @@
-# Copia este archivo como "application.properties" en la misma carpeta y completa
-# tus datos reales. Ese archivo NO se versiona (ver .gitignore).
+# Este archivo es completamente OPCIONAL. La aplicacion funciona sin el: usa una base de
+# datos embebida (H2) que crea sola en la carpeta de datos del usuario, sin instalar ningun
+# servidor ni crear ningun archivo. Esto solo existe para quien quiera sobreescribir algo
+# a mano (desarrollo, u otra base de datos). Si lo usas, copialo como "application.properties"
+# en la misma carpeta y completa tus datos; ese archivo NO se versiona (ver .gitignore).
 #
-# No uses el usuario "postgres" (superusuario) aqui: crea el rol restringido
-# con src/main/resources/db/roles.sql y usa sus credenciales.
-db.url=jdbc:postgresql://localhost:5432/dontoribio_pos
-db.user=pos_app
-db.password=CAMBIA_ESTA_CONTRASENA
-db.driver=org.postgresql.Driver
+# Ejemplo para apuntar a un PostgreSQL real en vez del H2 embebido (requiere agregar de
+# nuevo la dependencia org.postgresql:postgresql al pom.xml, que ya no se incluye por defecto):
+# db.url=jdbc:postgresql://localhost:5432/dontoribio_pos
+# db.user=pos_app
+# db.password=CAMBIA_ESTA_CONTRASENA
+# db.driver=org.postgresql.Driver
 
 # Configuracion del pool HikariCP
 db.pool.maximumPoolSize=10
@@ -21,6 +24,7 @@ balanza.puerto=COM3
 balanza.baudRate=9600
 balanza.modo=SIMULADA
 
-# Clave que se debe ingresar en la pantalla de "Crear usuario" (login) para poder registrar
-# una cuenta nueva. Evita que cualquiera con acceso a la PC cree usuarios sin autorizacion.
-seguridad.clave_recuperacion=CAMBIA_ESTA_CLAVE
+# Nombre del negocio y clave de recuperacion: ya NO se configuran aqui. Se definen una sola
+# vez, desde la propia app, en el asistente de "Configuracion inicial" que aparece la primera
+# vez que se abre el sistema en una PC nueva (ver ConfiguracionInicialController). Quedan
+# guardados en la base de datos de esta instalacion, no en este archivo.

@@ -2,12 +2,15 @@ package com.dontoribio.pos;
 
 import atlantafx.base.theme.PrimerLight;
 import com.dontoribio.pos.config.DatabaseConnection;
+import com.dontoribio.pos.config.SchemaInitializer;
 import com.dontoribio.pos.controller.MainPOSController;
 import com.dontoribio.pos.model.Usuario;
+import com.dontoribio.pos.service.ConfiguracionService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +40,31 @@ public class MainApp extends Application {
                 LOG.error("Excepcion no capturada en el hilo '{}'", thread.getName(), excepcion));
 
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
-        LOG.info("Iniciando Don Toribio POS");
+        LOG.info("Iniciando POS Carniceria");
 
-        stage.setTitle("Don Toribio S.A.C. - Punto de Venta");
-        mostrarPantallaLogin();
+        boolean esInstalacionNueva;
+        try {
+            esInstalacionNueva = SchemaInitializer.inicializarSiFalta();
+        } catch (RuntimeException e) {
+            LOG.error("No se pudo preparar la base de datos", e);
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo preparar la base de datos de esta instalacion.\n\n" + e.getMessage())
+                    .showAndWait();
+            System.exit(1);
+            return;
+        }
+
+        if (esInstalacionNueva) {
+            stage.setTitle("Configuracion inicial - Punto de Venta");
+            cargarEscena("configuracion_inicial.fxml", 480, 480);
+        } else {
+            mostrarPantallaLogin();
+        }
         stage.show();
     }
 
     public void mostrarPantallaLogin() {
+        stagePrincipal.setTitle(new ConfiguracionService().obtenerNombreNegocio() + " - Punto de Venta");
         cargarEscena("login.fxml", 480, 360);
     }
 
@@ -83,7 +103,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() {
-        LOG.info("Cerrando Don Toribio POS");
+        LOG.info("Cerrando POS Carniceria");
         DatabaseConnection.cerrarPool();
     }
 

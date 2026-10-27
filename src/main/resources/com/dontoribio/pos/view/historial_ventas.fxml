@@ -26,6 +26,7 @@
                 <DatePicker fx:id="datePickerHasta" />
                 <Button text="Buscar" onAction="#onBuscarRango" defaultButton="true" />
                 <Button text="Hoy" onAction="#onIrAHoy" />
+                <Button text="Exportar a Excel" onAction="#onExportarExcel" />
             </HBox>
             <Label fx:id="labelResumen" text="0 venta(s) hoy - Total: S/ 0.00" />
         </VBox>

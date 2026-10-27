@@ -1,16 +1,16 @@
 package com.dontoribio.pos.controller;
 
-import com.dontoribio.pos.config.PropertiesLoader;
+import com.dontoribio.pos.control.CampoPasswordVisible;
 import com.dontoribio.pos.dao.UsuarioDAO;
 import com.dontoribio.pos.dao.impl.UsuarioDAOImpl;
 import com.dontoribio.pos.model.Rol;
 import com.dontoribio.pos.model.Usuario;
+import com.dontoribio.pos.service.ConfiguracionService;
 import com.dontoribio.pos.util.PasswordUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -20,8 +20,9 @@ import javafx.stage.Stage;
  * crear un ADMINISTRADOR requiere entrar con una cuenta existente y usar "Gestionar usuarios"
  * (ver GestionUsuariosController), para que la escalacion de privilegios no sea posible
  * solo con la clave de recuperacion del negocio.
- * Requiere la clave de recuperacion configurada en application.properties para evitar
- * que cualquiera con acceso a la PC cree cuentas sin autorizacion.
+ * Requiere la clave de recuperacion (la que el propio negocio elige en la configuracion
+ * inicial, o la clave maestra de soporte del vendedor) para evitar que cualquiera con acceso
+ * a la PC cree cuentas sin autorizacion.
  */
 public class CrearUsuarioController {
 
@@ -30,17 +31,18 @@ public class CrearUsuarioController {
     @FXML
     private TextField campoUsername;
     @FXML
-    private PasswordField campoPassword;
+    private CampoPasswordVisible campoPassword;
     @FXML
-    private PasswordField campoConfirmarPassword;
+    private CampoPasswordVisible campoConfirmarPassword;
     @FXML
-    private PasswordField campoClaveRecuperacion;
+    private CampoPasswordVisible campoClaveRecuperacion;
     @FXML
     private Label labelMensaje;
     @FXML
     private Button botonCrearUsuario;
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAOImpl();
+    private final ConfiguracionService configuracionService = new ConfiguracionService();
 
     @FXML
     private void initialize() {
@@ -59,6 +61,10 @@ public class CrearUsuarioController {
             labelMensaje.setText("Complete nombre, usuario y contrasena");
             return;
         }
+        if (username.matches(".*\\s.*")) {
+            labelMensaje.setText("El usuario no puede contener espacios");
+            return;
+        }
         if (password.length() < 6) {
             labelMensaje.setText("La contrasena debe tener al menos 6 caracteres");
             return;
@@ -68,12 +74,7 @@ public class CrearUsuarioController {
             return;
         }
 
-        String claveConfigurada = PropertiesLoader.get("seguridad.clave_recuperacion");
-        if (claveConfigurada == null || claveConfigurada.isBlank()) {
-            labelMensaje.setText("No hay una clave de recuperacion configurada; no se puede crear usuarios asi");
-            return;
-        }
-        if (!claveConfigurada.equals(claveRecuperacion)) {
+        if (!configuracionService.esClaveDeRecuperacionValida(claveRecuperacion)) {
             labelMensaje.setText("Clave de recuperacion incorrecta");
             return;
         }

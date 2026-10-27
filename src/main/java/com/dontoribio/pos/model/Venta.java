@@ -1,12 +1,16 @@
 package com.dontoribio.pos.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Venta consolidada a partir del cierre de una lista de atencion. */
 public class Venta {
+
+    /** El IGV (18%, Peru) ya viene incluido en los precios; esto solo lo desglosa para mostrarlo/imprimirlo. */
+    private static final BigDecimal DIVISOR_IGV = new BigDecimal("1.18");
 
     private Long id;
     private LocalDateTime fecha;
@@ -93,6 +97,16 @@ public class Venta {
 
     public BigDecimal getTotal() {
         return total;
+    }
+
+    /** Valor de venta (total sin IGV), para desglosar en Boleta/Factura. Ver {@link #getIgv()}. */
+    public BigDecimal getValorVenta() {
+        return total.divide(DIVISOR_IGV, 2, RoundingMode.HALF_UP);
+    }
+
+    /** IGV (18%) ya incluido en el total; se calcula por diferencia para que ambos sumen exacto. */
+    public BigDecimal getIgv() {
+        return total.subtract(getValorVenta());
     }
 
     /** Restaura subtotal/total ya persistidos al reconstruir una venta desde la BD (sin recalcular desde detalles). */

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.dontoribio.pos.controller.HistorialComprasController">
+
+    <top>
+        <VBox spacing="6.0" styleClass="panel-pesaje">
+            <padding>
+                <Insets bottom="12.0" left="15.0" right="15.0" top="12.0" />
+            </padding>
+            <Label styleClass="etiqueta-seccion" text="Historial de compras" />
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Desde:" />
+                <DatePicker fx:id="datePickerDesde" />
+                <Label text="Hasta:" />
+                <DatePicker fx:id="datePickerHasta" />
+                <Button text="Buscar" onAction="#onBuscarRango" defaultButton="true" />
+                <Button text="Hoy" onAction="#onIrAHoy" />
+                <Button text="Exportar a Excel" onAction="#onExportarExcel" />
+            </HBox>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Buscar por nombre de proveedor:" />
+                <TextField fx:id="campoBuscarProveedor" prefWidth="220.0" promptText="Ej. Avicola San Jose" />
+                <Button text="Buscar por proveedor" onAction="#onBuscarPorProveedor" />
+            </HBox>
+            <Label fx:id="labelResumen" text="0 compra(s) hoy - Total: S/ 0.00" />
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="tablaCompras">
+            <columns>
+                <TableColumn fx:id="colFechaHora" text="Fecha y hora" prefWidth="150.0" />
+                <TableColumn fx:id="colProveedor" text="Proveedor" prefWidth="220.0" />
+                <TableColumn fx:id="colUsuario" text="Registrado por" prefWidth="170.0" />
+                <TableColumn fx:id="colTotal" text="Total" prefWidth="110.0" />
+                <TableColumn fx:id="colVer" text="Comprobante" prefWidth="110.0" sortable="false" />
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>

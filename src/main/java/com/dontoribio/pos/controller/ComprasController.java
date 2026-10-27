@@ -21,11 +21,29 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** Controlador de la ventana de Compras: registra ingresos de mercaderia e incrementa el stock. */
 public class ComprasController {
+
+    /**
+     * Categorias disponibles al crear un producto nuevo desde Compras, con su prefijo de
+     * codigo (ver {@link com.dontoribio.pos.dao.ProductoDAO#generarSiguienteCodigo}). El
+     * codigo ya no se escribe a mano: se calcula como el siguiente correlativo de la
+     * categoria elegida (ej. "RES-011" si el ultimo "RES-xxx" registrado es "RES-010").
+     */
+    private static final Map<String, String> CATEGORIAS_PRODUCTO = new LinkedHashMap<>();
+
+    static {
+        CATEGORIAS_PRODUCTO.put("Res", "RES");
+        CATEGORIAS_PRODUCTO.put("Cerdo", "CER");
+        CATEGORIAS_PRODUCTO.put("Pollo", "POL");
+        CATEGORIAS_PRODUCTO.put("Menudencia", "MEN");
+        CATEGORIAS_PRODUCTO.put("Embutidos", "EMB");
+    }
 
     @FXML
     private ComboBox<Proveedor> comboProveedor;
@@ -105,26 +123,69 @@ public class ComprasController {
 
     @FXML
     private void onNuevoProveedor() {
-        TextInputDialog dialogoNombre = new TextInputDialog();
-        dialogoNombre.setTitle("Nuevo proveedor");
-        dialogoNombre.setHeaderText(null);
-        dialogoNombre.setContentText("Nombre / Razon social:");
-        Optional<String> nombre = dialogoNombre.showAndWait();
-        if (nombre.isEmpty() || nombre.get().isBlank()) {
+        Dialog<Void> dialogo = new Dialog<>();
+        dialogo.setTitle("Nuevo proveedor");
+        dialogo.setHeaderText(null);
+
+        ButtonType botonGuardar = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
+        dialogo.getDialogPane().getButtonTypes().addAll(botonGuardar, ButtonType.CANCEL);
+
+        TextField campoNombreNuevo = new TextField();
+        TextField campoRucNuevo = new TextField();
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 10, 10, 10));
+        grid.addRow(0, new Label("Nombre / Razon social:"), campoNombreNuevo);
+        grid.addRow(1, new Label("RUC (opcional):"), campoRucNuevo);
+        dialogo.getDialogPane().setContent(grid);
+
+        Proveedor[] proveedorCreado = new Proveedor[1];
+        Button botonGuardarNodo = (Button) dialogo.getDialogPane().lookupButton(botonGuardar);
+        botonGuardarNodo.addEventFilter(ActionEvent.ACTION, evento -> {
+            String nombre = campoNombreNuevo.getText() == null ? "" : campoNombreNuevo.getText().trim();
+            if (nombre.isEmpty()) {
+                new Alert(Alert.AlertType.WARNING, "Ingrese el nombre o razon social del proveedor").showAndWait();
+                evento.consume();
+                return;
+            }
+            String ruc = campoRucNuevo.getText() == null || campoRucNuevo.getText().isBlank()
+                    ? null : campoRucNuevo.getText().trim();
+
+            Proveedor proveedor = new Proveedor();
+            proveedor.setNombreRazonSocial(nombre);
+            proveedor.setDocumento(ruc);
+
+            try {
+                proveedorDAO.guardar(proveedor);
+            } catch (RuntimeException e) {
+                new Alert(Alert.AlertType.ERROR, "No se pudo guardar el proveedor: " + e.getMessage()).showAndWait();
+                evento.consume();
+                return;
+            }
+            proveedorCreado[0] = proveedor;
+        });
+
+        dialogo.showAndWait();
+        if (proveedorCreado[0] == null) {
             return;
         }
 
-        Proveedor proveedor = new Proveedor();
-        proveedor.setNombreRazonSocial(nombre.get().trim());
-        proveedorDAO.guardar(proveedor);
-
         comboProveedor.setItems(FXCollections.observableArrayList(proveedorDAO.listarTodos()));
         comboProveedor.getItems().stream()
-                .filter(p -> p.getId().equals(proveedor.getId()))
+                .filter(p -> p.getId().equals(proveedorCreado[0].getId()))
                 .findFirst()
                 .ifPresent(comboProveedor::setValue);
     }
 
+    /**
+     * Alta rapida de un producto nuevo mientras se registra una compra: solo pide categoria y
+     * nombre. El codigo ya no se escribe a mano, se genera solo como el siguiente correlativo
+     * de la categoria elegida (ver {@link #CATEGORIAS_PRODUCTO}). Precio minorista/mayorista
+     * y stock se completan despues desde Catalogo (el stock, de hecho, se incrementa
+     * automaticamente al agregar este producto a la compra).
+     */
     @FXML
     private void onNuevoProducto() {
         Dialog<Void> dialogo = new Dialog<>();
@@ -134,52 +195,37 @@ public class ComprasController {
         ButtonType botonGuardar = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         dialogo.getDialogPane().getButtonTypes().addAll(botonGuardar, ButtonType.CANCEL);
 
-        TextField campoCodigoNuevo = new TextField();
+        ComboBox<String> comboCategoriaNueva = new ComboBox<>(FXCollections.observableArrayList(CATEGORIAS_PRODUCTO.keySet()));
+        comboCategoriaNueva.setPromptText("Seleccione una categoria");
         TextField campoNombreNuevo = new TextField();
-        TextField campoPrecioMinoristaNuevo = new TextField();
-        TextField campoPrecioMayoristaNuevo = new TextField();
-        TextField campoStockInicial = new TextField("0");
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 10, 10, 10));
-        grid.addRow(0, new Label("Codigo:"), campoCodigoNuevo);
+        grid.addRow(0, new Label("Categoria:"), comboCategoriaNueva);
         grid.addRow(1, new Label("Nombre:"), campoNombreNuevo);
-        grid.addRow(2, new Label("Precio/kg minorista (S/):"), campoPrecioMinoristaNuevo);
-        grid.addRow(3, new Label("Precio/kg mayorista (S/):"), campoPrecioMayoristaNuevo);
-        grid.addRow(4, new Label("Stock inicial (kg):"), campoStockInicial);
         dialogo.getDialogPane().setContent(grid);
 
         Producto[] productoCreado = new Producto[1];
         Button botonGuardarNodo = (Button) dialogo.getDialogPane().lookupButton(botonGuardar);
         botonGuardarNodo.addEventFilter(ActionEvent.ACTION, evento -> {
-            String codigo = campoCodigoNuevo.getText() == null ? "" : campoCodigoNuevo.getText().trim();
+            String categoria = comboCategoriaNueva.getValue();
             String nombre = campoNombreNuevo.getText() == null ? "" : campoNombreNuevo.getText().trim();
-            BigDecimal precioMinorista = parsearDecimal(campoPrecioMinoristaNuevo.getText());
-            BigDecimal precioMayorista = parsearDecimal(campoPrecioMayoristaNuevo.getText());
-            BigDecimal stockInicial = parsearDecimal(campoStockInicial.getText());
 
-            if (codigo.isEmpty() || nombre.isEmpty()) {
-                new Alert(Alert.AlertType.WARNING, "Ingrese codigo y nombre del producto").showAndWait();
-                evento.consume();
-                return;
-            }
-            if (precioMinorista == null || precioMayorista == null || stockInicial == null
-                    || precioMinorista.signum() < 0 || precioMayorista.signum() < 0 || stockInicial.signum() < 0) {
-                new Alert(Alert.AlertType.WARNING, "Precios y stock deben ser numeros validos y no negativos")
-                        .showAndWait();
+            if (categoria == null || nombre.isEmpty()) {
+                new Alert(Alert.AlertType.WARNING, "Seleccione la categoria e ingrese el nombre del producto").showAndWait();
                 evento.consume();
                 return;
             }
 
             Producto producto = new Producto();
-            producto.setCodigo(codigo);
+            producto.setCodigo(productoDAO.generarSiguienteCodigo(CATEGORIAS_PRODUCTO.get(categoria)));
             producto.setNombre(nombre);
-            producto.setPrecioKgMinorista(precioMinorista);
-            producto.setPrecioKgMayorista(precioMayorista);
+            producto.setPrecioKgMinorista(BigDecimal.ZERO);
+            producto.setPrecioKgMayorista(BigDecimal.ZERO);
             producto.setUnidadMedida("kg");
-            producto.setStockDisponible(stockInicial);
+            producto.setStockDisponible(BigDecimal.ZERO);
             producto.setActivo(true);
 
             try {
@@ -196,6 +242,10 @@ public class ComprasController {
         if (productoCreado[0] == null) {
             return;
         }
+
+        new Alert(Alert.AlertType.INFORMATION, "Producto \"" + productoCreado[0].getNombre() + "\" creado con el codigo "
+                + productoCreado[0].getCodigo() + ". Recuerde completar sus precios en Catalogo antes de venderlo.")
+                .showAndWait();
 
         comboProducto.setItems(FXCollections.observableArrayList(productoDAO.listarActivos()));
         comboProducto.getItems().stream()

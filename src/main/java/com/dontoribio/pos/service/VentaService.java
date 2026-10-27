@@ -12,6 +12,8 @@ import com.dontoribio.pos.model.TipoCliente;
 import com.dontoribio.pos.model.TipoComprobante;
 import com.dontoribio.pos.model.Usuario;
 import com.dontoribio.pos.model.Venta;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +56,8 @@ public class VentaService {
 
     /** Resuelve el cliente de la venta a partir del nombre ingresado, o el cliente generico si esta vacio. */
     public Cliente resolverClientePorNombre(String nombreCliente, TipoCliente tipoCliente) {
-        if (nombreCliente == null || nombreCliente.isBlank()) {
+        // Guava: Strings.nullToEmpty evita el chequeo manual de null antes de trim()
+        if (Strings.nullToEmpty(nombreCliente).trim().isEmpty()) {
             return obtenerClienteGenerico();
         }
         return clienteDAO.buscarPorNombre(nombreCliente).orElseGet(() -> {
@@ -67,6 +70,11 @@ public class VentaService {
 
     public Venta construirVenta(Usuario usuario, Cliente cliente, TipoComprobante tipoComprobante,
                                  String documentoCliente, List<DetalleVenta> items, MetodoPago metodoPago) {
+        // Guava Preconditions: falla rapido y con mensaje claro si llega una venta mal armada
+        Preconditions.checkNotNull(usuario, "La venta requiere un usuario (cajero)");
+        Preconditions.checkNotNull(cliente, "La venta requiere un cliente");
+        Preconditions.checkNotNull(metodoPago, "La venta requiere un metodo de pago");
+        Preconditions.checkArgument(items != null && !items.isEmpty(), "La venta debe tener al menos un producto");
         Venta venta = new Venta();
         venta.setUsuario(usuario);
         venta.setCliente(cliente);

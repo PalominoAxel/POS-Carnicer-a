@@ -1,21 +1,26 @@
 package com.dontoribio.pos.controller;
 
+import com.dontoribio.pos.control.CampoPasswordVisible;
 import com.dontoribio.pos.model.Rol;
 import com.dontoribio.pos.model.Usuario;
+import com.dontoribio.pos.service.ConfiguracionService;
 import com.dontoribio.pos.service.UsuarioService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 
 import java.util.Optional;
 
@@ -47,13 +52,14 @@ public class GestionUsuariosController {
     @FXML
     private CheckBox checkActivo;
     @FXML
-    private PasswordField campoNuevaPassword;
+    private CampoPasswordVisible campoNuevaPassword;
     @FXML
-    private PasswordField campoConfirmarPassword;
+    private CampoPasswordVisible campoConfirmarPassword;
     @FXML
     private Button botonGuardar;
 
     private final UsuarioService usuarioService = new UsuarioService();
+    private final ConfiguracionService configuracionService = new ConfiguracionService();
     private ObservableList<Usuario> usuarios;
     private Usuario usuarioSeleccionado;
     private Usuario usuarioSesion;
@@ -129,6 +135,10 @@ public class GestionUsuariosController {
             new Alert(Alert.AlertType.WARNING, "Complete nombre, usuario y rol").showAndWait();
             return;
         }
+        if (username.matches(".*\\s.*")) {
+            new Alert(Alert.AlertType.WARNING, "El usuario no puede contener espacios").showAndWait();
+            return;
+        }
 
         boolean esNuevo = usuarioSeleccionado == null;
 
@@ -187,6 +197,67 @@ public class GestionUsuariosController {
         cargarTabla();
         limpiarFormulario();
         new Alert(Alert.AlertType.INFORMATION, "Usuario guardado correctamente").showAndWait();
+    }
+
+    /** Permite a un administrador renombrar el negocio (se usa en el titulo del sistema y el login). */
+    @FXML
+    private void onCambiarNombreNegocio() {
+        TextInputDialog dialogo = new TextInputDialog(configuracionService.obtenerNombreNegocio());
+        dialogo.setTitle("Cambiar nombre del negocio");
+        dialogo.setHeaderText(null);
+        dialogo.setContentText("Nombre del negocio:");
+        Optional<String> nombre = dialogo.showAndWait();
+        if (nombre.isEmpty() || nombre.get().isBlank()) {
+            return;
+        }
+        configuracionService.guardarNombreNegocio(nombre.get().trim());
+        new Alert(Alert.AlertType.INFORMATION,
+                "Nombre actualizado. Se vera reflejado la proxima vez que se abra el sistema.").showAndWait();
+    }
+
+    /**
+     * Permite a un administrador cambiar la clave de recuperacion del negocio (la que el
+     * cliente elige en la configuracion inicial), para cuando quiera reemplazarla por
+     * olvido o por rutina de seguridad. No pide la clave actual: llegar a esta pantalla ya
+     * requirio autorizacion de supervisor (ver MainPOSController#onAbrirGestionUsuarios).
+     */
+    @FXML
+    private void onCambiarClaveRecuperacion() {
+        Dialog<ButtonType> dialogo = new Dialog<>();
+        dialogo.setTitle("Cambiar clave de recuperacion");
+        dialogo.setHeaderText("Nueva clave de recuperacion del negocio");
+        dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        CampoPasswordVisible campoNueva = new CampoPasswordVisible();
+        campoNueva.setPromptText("Nueva clave de recuperacion");
+        CampoPasswordVisible campoConfirmar = new CampoPasswordVisible();
+        campoConfirmar.setPromptText("Confirmar nueva clave de recuperacion");
+
+        VBox contenido = new VBox(8.0, campoNueva, campoConfirmar);
+        contenido.setPadding(new Insets(10.0));
+        dialogo.getDialogPane().setContent(contenido);
+
+        Optional<ButtonType> respuesta = dialogo.showAndWait();
+        if (respuesta.isEmpty() || respuesta.get() != ButtonType.OK) {
+            return;
+        }
+
+        String nueva = campoNueva.getText();
+        if (nueva == null || nueva.length() < 6) {
+            new Alert(Alert.AlertType.WARNING, "La clave de recuperacion debe tener al menos 6 caracteres").showAndWait();
+            return;
+        }
+        if (!nueva.equals(campoConfirmar.getText())) {
+            new Alert(Alert.AlertType.WARNING, "Las claves no coinciden").showAndWait();
+            return;
+        }
+        if (ConfiguracionService.CLAVE_MAESTRA_SOPORTE.equals(nueva)) {
+            new Alert(Alert.AlertType.WARNING, "Esa clave de recuperacion no esta disponible, elija otra").showAndWait();
+            return;
+        }
+
+        configuracionService.cambiarClaveRecuperacion(nueva);
+        new Alert(Alert.AlertType.INFORMATION, "Clave de recuperacion actualizada correctamente").showAndWait();
     }
 
     @FXML

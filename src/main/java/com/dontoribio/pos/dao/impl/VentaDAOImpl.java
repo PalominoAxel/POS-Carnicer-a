@@ -24,8 +24,10 @@ public class VentaDAOImpl implements VentaDAO {
 
     @Override
     public Venta registrarVenta(Venta venta) {
+        // RETURNING no es portable entre motores (H2 no lo soporta); el id generado se
+        // recupera con getGeneratedKeys(), que funciona igual en H2 y en Postgres.
         String sqlVenta = "INSERT INTO ventas (fecha, cliente_id, usuario_id, subtotal, total, tipo_comprobante, documento_cliente) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlDetalle = "INSERT INTO detalle_ventas (venta_id, producto_id, peso_kg, precio_unitario, importe) " +
                 "VALUES (?, ?, ?, ?, ?)";
         String sqlPago = "INSERT INTO pagos (venta_id, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
@@ -36,7 +38,7 @@ public class VentaDAOImpl implements VentaDAO {
             try {
                 LocalDateTime fecha = venta.getFecha() != null ? venta.getFecha() : LocalDateTime.now();
 
-                try (PreparedStatement ps = conn.prepareStatement(sqlVenta)) {
+                try (PreparedStatement ps = conn.prepareStatement(sqlVenta, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setTimestamp(1, Timestamp.valueOf(fecha));
                     ps.setLong(2, venta.getCliente().getId());
                     ps.setLong(3, venta.getUsuario().getId());
@@ -45,9 +47,10 @@ public class VentaDAOImpl implements VentaDAO {
                     ps.setString(6, venta.getTipoComprobante() == null
                             ? TipoComprobante.TICKET_SIMPLE.name() : venta.getTipoComprobante().name());
                     ps.setString(7, venta.getDocumentoCliente());
-                    try (ResultSet rs = ps.executeQuery()) {
+                    ps.executeUpdate();
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
                         if (rs.next()) {
-                            venta.setId(rs.getLong("id"));
+                            venta.setId(rs.getLong(1));
                         }
                     }
                 }
@@ -89,7 +92,10 @@ public class VentaDAOImpl implements VentaDAO {
                 return venta;
             } catch (SQLException e) {
                 conn.rollback();
-                if (e.getSQLState() != null && e.getSQLState().equals("23514")) {
+                // 23514 es el SQLSTATE de check_violation en Postgres; H2 usa 23513 para lo
+                // mismo. Se aceptan ambos para que el mensaje quede correcto sin importar el
+                // motor configurado.
+                if ("23514".equals(e.getSQLState()) || "23513".equals(e.getSQLState())) {
                     LOG.warn("Venta rechazada por stock insuficiente (usuario={}, cliente={})",
                             venta.getUsuario() == null ? null : venta.getUsuario().getId(),
                             venta.getCliente() == null ? null : venta.getCliente().getId());
@@ -137,7 +143,7 @@ public class VentaDAOImpl implements VentaDAO {
                 "FROM ventas v " +
                 "JOIN clientes c ON c.id = v.cliente_id " +
                 "JOIN usuarios u ON u.id = v.usuario_id " +
-                "WHERE v.fecha::date BETWEEN ? AND ? ORDER BY v.fecha DESC";
+                "WHERE CAST(v.fecha AS DATE) BETWEEN ? AND ? ORDER BY v.fecha DESC";
         List<Venta> ventas = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

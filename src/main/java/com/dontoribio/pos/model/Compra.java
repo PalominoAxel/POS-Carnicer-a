@@ -68,4 +68,9 @@ public class Compra {
     public BigDecimal getTotal() {
         return total;
     }
+
+    /** Fija el total ya persistido al cargar solo la cabecera (sin detalle) desde la base de datos. */
+    public void setTotalPersistido(BigDecimal total) {
+        this.total = total;
+    }
 }

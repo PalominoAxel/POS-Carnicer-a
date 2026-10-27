@@ -5,6 +5,7 @@ import com.dontoribio.pos.control.CampoPasswordVisible;
 import com.dontoribio.pos.dao.UsuarioDAO;
 import com.dontoribio.pos.dao.impl.UsuarioDAOImpl;
 import com.dontoribio.pos.model.Usuario;
+import com.dontoribio.pos.service.ConfiguracionService;
 import com.dontoribio.pos.util.PasswordUtil;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -33,11 +34,12 @@ public class LoginController {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoginController.class);
 
-    /** Clave maestra para desbloquear el ingreso o restablecer una contrasena olvidada. */
-    private static final String CODIGO_AUTENTICACION = "Moises955";
     private static final int MAX_INTENTOS_FALLIDOS = 4;
     private static final long DURACION_BLOQUEO_MS = 60_000L;
     private static final int LONGITUD_MINIMA_PASSWORD = 6;
+
+    @FXML
+    private Label labelNombreNegocio;
 
     @FXML
     private TextField campoUsername;
@@ -85,6 +87,7 @@ public class LoginController {
     private Button botonCambiarPasswordOlvidada;
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAOImpl();
+    private final ConfiguracionService configuracionService = new ConfiguracionService();
 
     private int intentosFallidos = 0;
     private long bloqueadoHasta = 0L;
@@ -93,6 +96,7 @@ public class LoginController {
     @FXML
     private void initialize() {
         labelError.setText("");
+        labelNombreNegocio.setText(configuracionService.obtenerNombreNegocio().toUpperCase());
     }
 
     @FXML
@@ -101,7 +105,7 @@ public class LoginController {
             return;
         }
 
-        String username = campoUsername.getText() == null ? "" : campoUsername.getText().trim();
+        String username = normalizarUsername(campoUsername.getText());
         String password = campoPassword.getText();
 
         if (username.isEmpty() || password == null || password.isEmpty()) {
@@ -139,6 +143,15 @@ public class LoginController {
         } catch (RuntimeException e) {
             labelError.setText("No se pudo abrir el POS: " + e.getMessage());
         }
+    }
+
+    /**
+     * Quita todos los espacios (no solo los de los extremos) del usuario ingresado.
+     * Los usernames de esta app nunca los tienen, asi que es un typo frecuente
+     * (p. ej. "Don Toribio" en vez de "DonToribio") que de otro modo nunca encuentra la cuenta.
+     */
+    private static String normalizarUsername(String texto) {
+        return texto == null ? "" : texto.trim().replaceAll("\\s+", "");
     }
 
     private boolean estaBloqueado() {
@@ -180,7 +193,7 @@ public class LoginController {
         }
         long segundosRestantes = (restanteMs + 999) / 1000;
         labelBloqueo.setText("Intente nuevamente en " + segundosRestantes
-                + " s, o ingrese el codigo de autenticacion para desbloquear ahora.");
+                + " s, o ingrese la clave de recuperacion para desbloquear ahora.");
     }
 
     private void desactivarBloqueo() {
@@ -197,11 +210,11 @@ public class LoginController {
 
     @FXML
     private void onDesbloquearConCodigo(ActionEvent event) {
-        if (CODIGO_AUTENTICACION.equals(campoCodigoDesbloqueo.getText())) {
+        if (configuracionService.esClaveDeRecuperacionValida(campoCodigoDesbloqueo.getText())) {
             desactivarBloqueo();
             labelError.setText("Ingreso desbloqueado. Intente iniciar sesion nuevamente.");
         } else {
-            labelBloqueo.setText("Codigo de autenticacion incorrecto.");
+            labelBloqueo.setText("Clave de recuperacion incorrecta.");
         }
     }
 
@@ -222,7 +235,7 @@ public class LoginController {
      * (Enter), para que escribir y presionar Enter en estos campos no dispare el login.
      */
     private void abrirPanelRecuperacion() {
-        campoUsernameRecuperacion.setText(campoUsername.getText() == null ? "" : campoUsername.getText().trim());
+        campoUsernameRecuperacion.setText(normalizarUsername(campoUsername.getText()));
         campoNuevaPassword.clear();
         campoConfirmarPassword.clear();
         campoCodigoRecuperacion.clear();
@@ -270,14 +283,14 @@ public class LoginController {
             return;
         }
 
-        String username = campoUsernameRecuperacion.getText() == null ? "" : campoUsernameRecuperacion.getText().trim();
+        String username = normalizarUsername(campoUsernameRecuperacion.getText());
         if (username.isEmpty()) {
             labelErrorRecuperacion.setText("Ingrese el nombre de usuario de la cuenta a restablecer");
             return;
         }
 
-        if (!CODIGO_AUTENTICACION.equals(campoCodigoRecuperacion.getText())) {
-            labelErrorRecuperacion.setText("Codigo de autenticacion incorrecto");
+        if (!configuracionService.esClaveDeRecuperacionValida(campoCodigoRecuperacion.getText())) {
+            labelErrorRecuperacion.setText("Clave de recuperacion incorrecta");
             return;
         }
 

@@ -7,6 +7,7 @@ import com.dontoribio.pos.dao.impl.ProductoDAOImpl;
 import com.dontoribio.pos.model.*;
 import com.dontoribio.pos.service.BalanzaSimuladaService;
 import com.dontoribio.pos.service.CajaService;
+import com.dontoribio.pos.service.ConfiguracionService;
 import com.dontoribio.pos.service.IBalanzaService;
 import com.dontoribio.pos.service.TicketGeneratorService;
 import com.dontoribio.pos.service.UsuarioService;
@@ -54,6 +55,8 @@ public class MainPOSController {
 
     private static final Pattern SOLO_DIGITOS = Pattern.compile("\\d*");
 
+    @FXML
+    private Label labelNombreNegocio;
     @FXML
     private Label labelUsuarioActivo;
     @FXML
@@ -104,6 +107,8 @@ public class MainPOSController {
 
     @FXML
     private void initialize() {
+        labelNombreNegocio.setText(new ConfiguracionService().obtenerNombreNegocio() + " - POS");
+
         comboTipoCliente.setItems(FXCollections.observableArrayList(TipoCliente.values()));
         comboTipoCliente.setValue(TipoCliente.MINORISTA);
         comboMetodoPago.setItems(FXCollections.observableArrayList(MetodoPago.values()));
@@ -122,7 +127,10 @@ public class MainPOSController {
 
         campoEfectivoEntregado.setDisable(true);
         campoEfectivoEntregado.textProperty().addListener((obs, anterior, nuevo) -> actualizarVuelto());
-        comboTipoCliente.setOnAction(e -> actualizarImporteCalculado());
+        comboTipoCliente.setOnAction(e -> {
+            actualizarImporteCalculado();
+            actualizarRangoBalanzaSimulada();
+        });
 
         campoBuscarProducto.textProperty().addListener((obs, anterior, nuevo) -> {
             String filtro = nuevo == null ? "" : nuevo.trim().toLowerCase();
@@ -272,12 +280,27 @@ public class MainPOSController {
         }
     }
 
-    /** Carga una imagen desde una ruta local; retorna null si la ruta esta vacia, el archivo no existe o no es valido. */
+    /**
+     * Carga una imagen de producto. Prueba primero como recurso del classpath (las
+     * imagenes por defecto del catalogo viven en src/main/resources/img/productos/, asi
+     * que siempre estan disponibles sin importar desde donde se ejecute la app); si no
+     * existe ahi, prueba como ruta de archivo absoluta (imagenes que el usuario suba desde
+     * Catalogo, guardadas en la carpeta de datos de esta instalacion). Retorna null si la
+     * ruta esta vacia o no se encuentra en ninguno de los dos lugares.
+     */
     private Image cargarImagen(String ruta) {
         if (ruta == null || ruta.isBlank()) {
             return null;
         }
-        File archivo = new File(ruta.trim());
+        String rutaLimpia = ruta.trim();
+
+        var recursoClasspath = getClass().getResource("/" + rutaLimpia);
+        if (recursoClasspath != null) {
+            Image imagen = new Image(recursoClasspath.toExternalForm());
+            return imagen.isError() ? null : imagen;
+        }
+
+        File archivo = new File(rutaLimpia);
         if (!archivo.isFile()) {
             return null;
         }
@@ -291,27 +314,56 @@ public class MainPOSController {
 
     private TableView<DetalleVenta> crearTablaDetalle() {
         TableView<DetalleVenta> tabla = new TableView<>();
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<DetalleVenta, String> colProducto = new TableColumn<>("Producto");
         colProducto.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleStringProperty(data.getValue().getProducto().getNombre()));
+        colProducto.setPrefWidth(260.0);
+        colProducto.setMinWidth(160.0);
 
         TableColumn<DetalleVenta, BigDecimal> colPeso = new TableColumn<>("Peso (kg)");
         colPeso.setCellValueFactory(new PropertyValueFactory<>("pesoKg"));
+        colPeso.setPrefWidth(110.0);
+        colPeso.setMinWidth(90.0);
 
         TableColumn<DetalleVenta, BigDecimal> colPrecio = new TableColumn<>("Precio/kg");
         colPrecio.setCellValueFactory(new PropertyValueFactory<>("precioUnitario"));
+        colPrecio.setPrefWidth(120.0);
+        colPrecio.setMinWidth(100.0);
 
         TableColumn<DetalleVenta, BigDecimal> colImporte = new TableColumn<>("Importe (S/)");
         colImporte.setCellValueFactory(new PropertyValueFactory<>("importe"));
+        colImporte.setPrefWidth(130.0);
+        colImporte.setMinWidth(100.0);
 
         tabla.getColumns().addAll(colProducto, colPeso, colPrecio, colImporte);
         return tabla;
     }
 
+    // Rango simulado de peso por tipo de cliente: al menudeo son cortes individuales (1-3 kg),
+    // al mayoreo se pesan animales enteros (100-200 kg). Solo aplica a la balanza simulada;
+    // una balanza real simplemente reporta lo que hay en el plato.
+    private static final double PESO_MIN_MINORISTA_KG = 1.0;
+    private static final double PESO_MAX_MINORISTA_KG = 3.0;
+    private static final double PESO_MIN_MAYORISTA_KG = 100.0;
+    private static final double PESO_MAX_MAYORISTA_KG = 200.0;
+
+    private void actualizarRangoBalanzaSimulada() {
+        if (!(balanzaService instanceof BalanzaSimuladaService simulada)) {
+            return;
+        }
+        if (comboTipoCliente.getValue() == TipoCliente.MAYORISTA) {
+            simulada.establecerRangoPeso(PESO_MIN_MAYORISTA_KG, PESO_MAX_MAYORISTA_KG);
+        } else {
+            simulada.establecerRangoPeso(PESO_MIN_MINORISTA_KG, PESO_MAX_MINORISTA_KG);
+        }
+    }
+
     private void iniciarBalanza() {
         try {
             balanzaService.conectar();
+            actualizarRangoBalanzaSimulada();
             balanzaService.iniciarLecturaContinua(new com.dontoribio.pos.service.PesoListener() {
                 @Override
                 public void onPesoRecibido(double pesoKg) {
@@ -366,6 +418,7 @@ public class MainPOSController {
     private void onTipoComprobanteSeleccionado() {
         TipoComprobante tipo = comboTipoComprobante.getValue();
         aplicarRestriccionDocumento(tipo == null ? TipoComprobante.TICKET_SIMPLE : tipo);
+        actualizarTotalListaActiva();
     }
 
     /** Habilita el campo de documento y limita su longitud/formato segun el tipo de comprobante elegido. */
@@ -492,7 +545,18 @@ public class MainPOSController {
         int numeroListaActiva = tabPaneListas.getSelectionModel().getSelectedIndex() + 1;
         ListaAtencion lista = listasAtencion.get(numeroListaActiva);
         if (lista != null) {
-            labelTotalLista.setText("Total: S/ " + lista.getTotal().setScale(2, RoundingMode.HALF_UP));
+            BigDecimal total = lista.getTotal().setScale(2, RoundingMode.HALF_UP);
+            TipoComprobante tipo = comboTipoComprobante.getValue();
+            // El IGV ya esta incluido en los precios; en Boleta/Factura se desglosa porque
+            // son comprobantes fiscales (en Ticket simple se deja el total sin desglosar).
+            if (tipo == TipoComprobante.BOLETA || tipo == TipoComprobante.FACTURA) {
+                BigDecimal valorVenta = total.divide(new BigDecimal("1.18"), 2, RoundingMode.HALF_UP);
+                BigDecimal igv = total.subtract(valorVenta);
+                labelTotalLista.setText("Total: S/ " + total
+                        + "  (Valor venta: S/ " + valorVenta + " + IGV 18%: S/ " + igv + ")");
+            } else {
+                labelTotalLista.setText("Total: S/ " + total);
+            }
         }
         actualizarVuelto();
     }
@@ -596,6 +660,11 @@ public class MainPOSController {
     @FXML
     private void onAbrirHistorialVentas() {
         abrirVentana("historial_ventas.fxml", "Historial de ventas");
+    }
+
+    @FXML
+    private void onAbrirHistorialCompras() {
+        abrirVentana("historial_compras.fxml", "Historial de compras");
     }
 
     @FXML

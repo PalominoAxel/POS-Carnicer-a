@@ -22,11 +22,30 @@ public class BalanzaSimuladaService implements IBalanzaService {
     private Thread hiloLectura;
     private Task<Void> tareaLectura;
     private double pesoBase = 0.0;
+    private double pesoMinimoKg = 1.0;
+    private double pesoMaximoKg = 3.0;
 
     @Override
     public void conectar() {
         conectado = true;
-        pesoBase = 1.0 + ThreadLocalRandom.current().nextDouble(0, 2.0);
+        sortearPesoBase();
+    }
+
+    /**
+     * Cambia el rango de peso que simula la balanza (p. ej. 1-3 kg para cortes al menudeo
+     * vs. 100-200 kg para animales enteros al mayoreo) y vuelve a sortear el peso base de
+     * inmediato, para que el cambio se refleje en la siguiente lectura sin reconectar.
+     */
+    public void establecerRangoPeso(double minimoKg, double maximoKg) {
+        this.pesoMinimoKg = minimoKg;
+        this.pesoMaximoKg = maximoKg;
+        if (conectado) {
+            sortearPesoBase();
+        }
+    }
+
+    private void sortearPesoBase() {
+        pesoBase = pesoMinimoKg + ThreadLocalRandom.current().nextDouble(0, pesoMaximoKg - pesoMinimoKg);
     }
 
     @Override

@@ -25,28 +25,28 @@
 
             <HBox spacing="10.0" alignment="CENTER_LEFT">
                 <Label text="Proveedor:" />
-                <ComboBox fx:id="comboProveedor" prefWidth="220.0" />
+                <ComboBox fx:id="comboProveedor" prefWidth="220.0" promptText="Seleccione un proveedor" />
                 <Button onAction="#onNuevoProveedor" text="Nuevo proveedor" />
             </HBox>
 
             <HBox spacing="10.0" alignment="CENTER_LEFT">
                 <Label text="Producto:" />
-                <ComboBox fx:id="comboProducto" prefWidth="220.0" />
+                <ComboBox fx:id="comboProducto" prefWidth="220.0" promptText="Seleccione un producto" />
                 <Button onAction="#onNuevoProducto" text="Nuevo producto" />
                 <Label text="Peso/Cant (kg):" />
-                <TextField fx:id="campoPeso" prefWidth="80.0" />
+                <TextField fx:id="campoPeso" prefWidth="80.0" promptText="Ej. 5.5" />
                 <Label text="Costo/kg (S/):" />
-                <TextField fx:id="campoCosto" prefWidth="80.0" />
+                <TextField fx:id="campoCosto" prefWidth="80.0" promptText="Ej. 18.50" />
                 <Button onAction="#onAgregarDetalle" styleClass="boton-primario" text="Agregar a compra" />
             </HBox>
 
             <HBox spacing="10.0" alignment="CENTER_LEFT">
                 <Label text="Lote (opcional):" />
-                <TextField fx:id="campoLote" prefWidth="120.0" />
+                <TextField fx:id="campoLote" prefWidth="120.0" promptText="Ej. L-2026-10" />
                 <Label text="Fecha produccion (opcional):" />
-                <DatePicker fx:id="campoFechaProduccion" prefWidth="140.0" />
+                <DatePicker fx:id="campoFechaProduccion" prefWidth="140.0" promptText="dd/mm/aaaa" />
                 <Label text="Fecha vencimiento (opcional):" />
-                <DatePicker fx:id="campoFechaVencimiento" prefWidth="140.0" />
+                <DatePicker fx:id="campoFechaVencimiento" prefWidth="140.0" promptText="dd/mm/aaaa" />
             </HBox>
         </VBox>
     </top>

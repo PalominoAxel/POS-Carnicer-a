@@ -107,5 +107,11 @@ CREATE TABLE IF NOT EXISTS caja (
     monto_final     NUMERIC(10, 2)
 );
 
--- password_hash es el hash BCrypt de 'Palomino12/' (nunca texto plano; PasswordUtil.verificarPassword lo rechazaria).
-INSERT INTO usuarios(username, password_hash, nombre_completo, rol, activo) VALUES ('DonToribio', '$2a$12$dDyUgMArMa6TFVPcJjuxnOCc6HxiVkorQzXAyXiTxEPZYPszCKgnm', 'Administrador', 'ADMINISTRADOR', true);
+-- Configuracion propia de esta instalacion (nombre del negocio, clave de recuperacion elegida
+-- por el cliente al configurarla por primera vez). Ver ConfiguracionInicialController: no se
+-- siembra ningun usuario administrador por defecto, cada instalacion crea el suyo la primera
+-- vez que se abre, con sus propios datos.
+CREATE TABLE IF NOT EXISTS configuracion (
+    clave VARCHAR(50) PRIMARY KEY,
+    valor VARCHAR(255)
+);
