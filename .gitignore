@@ -1,19 +1,28 @@
 # Build output de Maven (se regenera con "mvn package"; no debe versionarse)
 target/
+dependency-reduced-pom.xml
 
 # Archivo con credenciales reales de conexion a la base de datos.
 # Cada equipo crea el suyo copiando application.properties.example.
 src/main/resources/application.properties
+# Copias de respaldo de configuracion (pueden contener claves)
+*.bak
 
-# IDEs
+# IDEs y editores
 .idea/
 *.iml
 .vscode/
 
-# Configuracion y skills locales de Claude Code (no son parte de la app)
+# Configuracion local de herramientas de cada desarrollador (no son parte de la app)
 .claude/
 .agents/
+skills-lock.json
 
 # Logs generados en runtime (ver logback.xml) y respaldos locales de la base de datos
 logs/
 backups/
+
+# Archivos del sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store

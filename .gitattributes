@@ -1,0 +1,13 @@
+# Normaliza finales de linea: el equipo trabaja en Windows y Codespaces corre en Linux.
+* text=auto eol=lf
+
+# Scripts de Windows con CRLF para que PowerShell los lea sin problemas
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Binarios: nunca convertir
+*.jpg binary
+*.JPG binary
+*.png binary
+*.xlsx binary
+*.jar binary
