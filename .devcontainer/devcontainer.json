@@ -3,7 +3,9 @@
   // Trae Java 17 + Maven listos y un escritorio ligero (noVNC) para ver la app JavaFX
   // desde el navegador. La app usa H2 embebido, asi que no hace falta instalar PostgreSQL.
   "name": "Don Toribio POS (Java 17 + Maven)",
-  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
 
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
