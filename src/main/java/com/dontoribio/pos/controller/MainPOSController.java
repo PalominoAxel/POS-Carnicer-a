@@ -230,6 +230,9 @@ public class MainPOSController {
             listasAtencion.put(numero, lista);
 
             TableView<DetalleVenta> tabla = crearTablaDetalle();
+            javafx.scene.control.Label placeholder = new javafx.scene.control.Label("🛒 No hay productos en la venta actual\nSeleccione un corte del catálogo para iniciar");
+placeholder.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14px; -fx-text-alignment: center;");
+tabla.setPlaceholder(placeholder);
             tablasPorLista.put(numero, tabla);
 
             Tab tab = new Tab("Lista " + numero, tabla);

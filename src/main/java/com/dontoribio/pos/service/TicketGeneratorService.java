@@ -40,13 +40,14 @@ public final class TicketGeneratorService {
         javafx.scene.control.Button botonImprimir = new javafx.scene.control.Button("Imprimir");
         javafx.scene.control.Button botonCerrar = new javafx.scene.control.Button("Cerrar");
 
-        javafx.scene.layout.HBox botones = new javafx.scene.layout.HBox(10.0, botonImprimir, botonCerrar);
-        javafx.scene.layout.VBox raiz = new javafx.scene.layout.VBox(10.0, areaTicket, botones);
-        raiz.setPadding(new javafx.geometry.Insets(15.0));
+        javafx.scene.layout.HBox botones = new javafx.scene.layout.HBox(20.0, botonImprimir, botonCerrar);
+        areaTicket.setPrefHeight(620);
+        javafx.scene.layout.VBox raiz = new javafx.scene.layout.VBox(20.0, areaTicket, botones);
+        raiz.setPadding(new javafx.geometry.Insets(20.0));
 
         javafx.stage.Stage ventana = new javafx.stage.Stage();
         ventana.setTitle("Vista previa - Boleta de venta");
-        ventana.setScene(new javafx.scene.Scene(raiz, 380, 520));
+        ventana.setScene(new javafx.scene.Scene(raiz, 440, 720));
 
         botonImprimir.setOnAction(e -> imprimir(ticketTexto, ventana));
         botonCerrar.setOnAction(e -> ventana.close());
