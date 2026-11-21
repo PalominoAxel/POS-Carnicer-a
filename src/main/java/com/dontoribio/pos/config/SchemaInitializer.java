@@ -56,6 +56,12 @@ public final class SchemaInitializer {
         try (Connection conn = DatabaseConnection.getConnection()) {
             boolean primerArranque = !existeTabla(conn, "USUARIOS");
 
+            if (!Boolean.parseBoolean(PropertiesLoader.get("db.schema.initialize", "true"))) {
+                if (primerArranque) {
+                    throw new SQLException("Produccion requiere el esquema preparado por el administrador");
+                }
+                return false;
+            }
             ejecutarScript(conn, "/db/schema.sql");
             if (primerArranque) {
                 LOG.info("Primer arranque: sembrando el catalogo inicial de productos");

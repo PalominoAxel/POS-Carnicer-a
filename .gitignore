@@ -2,9 +2,9 @@
 target/
 dependency-reduced-pom.xml
 
-# Archivo con credenciales reales de conexion a la base de datos.
-# Cada equipo crea el suyo copiando application.properties.example.
-src/main/resources/application.properties
+# Configuracion privada de desarrollo.
+# application.properties contiene solo opciones comunes sin credenciales.
+src/main/resources/application-local.properties
 # Copias de respaldo de configuracion (pueden contener claves)
 *.bak
 
@@ -26,3 +26,7 @@ backups/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Variables privadas del equipo
+.env
+.env.*
