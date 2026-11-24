@@ -30,3 +30,6 @@ desktop.ini
 # Variables privadas del equipo
 .env
 .env.*
+src/main/resources/static/
+*.env
+*.bat
