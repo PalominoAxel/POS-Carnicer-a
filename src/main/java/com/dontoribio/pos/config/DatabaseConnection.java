@@ -72,7 +72,7 @@ public final class DatabaseConnection {
             config.setPoolName(PropertiesLoader.get("db.pool.name", "DonToribioPool"));
 
             dataSource = new HikariDataSource(config);
-            LOG.info("Pool de conexiones '{}' inicializado contra {}", config.getPoolName(), config.getJdbcUrl());
+            LOG.info("Pool de conexiones '{}' inicializado en perfil {}", config.getPoolName(), PropertiesLoader.get("app.profile", "dev"));
             return dataSource;
         } catch (RuntimeException e) {
             LOG.error("No se pudo inicializar el pool de conexiones a la base de datos", e);
