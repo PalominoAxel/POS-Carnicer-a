@@ -32,4 +32,12 @@ desktop.ini
 .env.*
 src/main/resources/static/
 *.env
+# Scripts locales de despliegue
 *.bat
+# Registros de ejecución
+logs/
+# Configuración local privada
+src/main/resources/application-local.properties
+# Base de datos y datos locales
+datos/
+backups/
