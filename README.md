@@ -239,6 +239,37 @@ Guia completa del flujo de trabajo: [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Historial de commits](https://github.com/PalominoAxel/POS-Carnicer-a/commits/principal/)
 - [Documento de mejoras del curso](MEJORAS-CURSO.md)
 
+## 15. Despliegue, perfiles y versión 0.8.0
+
+### Perfiles de configuración
+
+- `application.properties`: opciones comunes, sin credenciales.
+- `application-dev.properties`: desarrollo (perfil por defecto, H2 local).
+- `application-prod.properties`: producción; lee `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` y `DB_DRIVER` desde variables de entorno.
+- El perfil se elige con `-Dpos.profile` o con la variable `SPRING_PROFILES_ACTIVE`.
+- Las configuraciones privadas van en `application-local.properties`, que Git ignora. No se suben claves al repositorio.
+
+### Construir el JAR
+
+```bash
+mvn clean package
+```
+
+El resultado queda en `target/pos-dontoribio.jar` (carpeta ignorada por Git).
+
+### Arranque en producción
+
+1. Crear una carpeta fuera del IDE, por ejemplo `C:\despliegue\proyecto`.
+2. Copiar allí `pos-dontoribio.jar`.
+3. Definir `SPRING_PROFILES_ACTIVE=prod` y las variables `DB_*`. La clave no se escribe en archivos (ver `DESPLIEGUE_PIERO.md`).
+4. Ejecutar `java -jar pos-dontoribio.jar` y revisar `logs/*.log`.
+
+El script `iniciar-prod.bat` es local y no se versiona (`*.bat` está en `.gitignore`).
+
+### Versionado
+
+Versión entregada: etiqueta `v0.8.0`. El flujo de ramas y Pull Requests está en `CONTRIBUTING.md`.
+
 ---
 
 **Don Toribio POS** — Proyecto de software de escritorio para la gestión de ventas y operaciones de una carnicería.
