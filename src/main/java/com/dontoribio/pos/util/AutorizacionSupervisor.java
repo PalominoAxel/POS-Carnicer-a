@@ -11,6 +11,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Optional;
 
 /**
@@ -21,6 +24,7 @@ import java.util.Optional;
  */
 public final class AutorizacionSupervisor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AutorizacionSupervisor.class);
     private static final UsuarioService USUARIO_SERVICE = new UsuarioService();
 
     private AutorizacionSupervisor() {
@@ -57,6 +61,7 @@ public final class AutorizacionSupervisor {
         boolean autorizado = USUARIO_SERVICE.verificarCredencialesAdministrador(
                 campoUsername.getText(), campoPassword.getText());
         if (!autorizado) {
+            LOG.warn("Autorizacion de supervisor rechazada (accion={}, usuarioIngresado={})", accion, campoUsername.getText());
             new Alert(Alert.AlertType.ERROR, "Usuario o contrasena de administrador incorrectos").showAndWait();
         }
         return autorizado;

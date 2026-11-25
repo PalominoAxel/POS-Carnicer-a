@@ -6,6 +6,9 @@ import com.dontoribio.pos.model.Caja;
 import com.dontoribio.pos.model.MetodoPago;
 import com.dontoribio.pos.model.Usuario;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -14,6 +17,8 @@ import java.util.Optional;
 
 /** Reglas de negocio de apertura/cierre de caja y resumen de ventas del turno. */
 public class CajaService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CajaService.class);
 
     private final CajaDAO cajaDAO;
 
@@ -33,11 +38,14 @@ public class CajaService {
         Caja caja = new Caja();
         caja.setUsuario(usuario);
         caja.setMontoInicial(montoInicial.setScale(2, RoundingMode.HALF_UP));
-        return cajaDAO.abrirCaja(caja);
+        Caja abierta = cajaDAO.abrirCaja(caja);
+        LOG.info("Caja abierta (usuario={}, montoInicial={})", usuario.getId(), caja.getMontoInicial());
+        return abierta;
     }
 
     public void cerrarCaja(Long cajaId, LocalDateTime fechaCierre, BigDecimal montoFinal) {
         cajaDAO.cerrarCaja(cajaId, fechaCierre, montoFinal);
+        LOG.info("Caja cerrada (cajaId={}, montoFinal={})", cajaId, montoFinal);
     }
 
     public Map<MetodoPago, BigDecimal> resumenVentasDesde(LocalDateTime desde) {
