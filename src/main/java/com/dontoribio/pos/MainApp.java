@@ -6,6 +6,7 @@ import com.dontoribio.pos.config.SchemaInitializer;
 import com.dontoribio.pos.controller.MainPOSController;
 import com.dontoribio.pos.model.Usuario;
 import com.dontoribio.pos.service.ConfiguracionService;
+import com.dontoribio.pos.util.PosMonitoringServer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -61,6 +62,7 @@ public class MainApp extends Application {
             mostrarPantallaLogin();
         }
         stage.show();
+        PosMonitoringServer.iniciar(8080);
     }
 
     public void mostrarPantallaLogin() {
@@ -104,6 +106,7 @@ public class MainApp extends Application {
     @Override
     public void stop() {
         LOG.info("Cerrando POS Carniceria");
+        PosMonitoringServer.detener();
         DatabaseConnection.cerrarPool();
     }
 
