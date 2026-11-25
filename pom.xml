@@ -141,7 +141,14 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+
+             <dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+    <version>1.13.6</version>
+</dependency>
     </dependencies>
+
 
     <build>
         <finalName>pos-dontoribio</finalName>
