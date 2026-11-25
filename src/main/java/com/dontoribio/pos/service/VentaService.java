@@ -15,12 +15,16 @@ import com.dontoribio.pos.model.Venta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Optional;
 
 /** Reglas de negocio de registro de venta: resolucion de cliente y armado/persistencia de la venta. */
 public class VentaService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(VentaService.class);
     private static final String DOCUMENTO_CLIENTE_GENERICO = "00000000";
 
     private final VentaDAO ventaDAO;
@@ -87,5 +91,6 @@ public class VentaService {
 
     public void registrarVenta(Venta venta) {
         ventaDAO.registrarVenta(venta);
+        LOG.info("Venta registrada (usuario={}, total={})", venta.getUsuario().getId(), venta.getTotal());
     }
 }
