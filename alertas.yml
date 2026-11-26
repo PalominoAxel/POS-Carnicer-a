@@ -1,0 +1,29 @@
+groups:
+  - name: alertas_don_toribio_pos
+    rules:
+      - alert: PosCaido
+        expr: up{job="pos-dontoribio"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "El servicio Don Toribio POS esta caido"
+          description: "No hay respuesta del objetivo pos-dontoribio durante 30 segundos."
+
+      - alert: ErroresEnCaja
+        expr: increase(pos_ventas_errores_total[2m]) > 0
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Errores detectados en caja o ventas"
+          description: "Se registraron errores en ventas o caja en los ultimos 2 minutos."
+
+      - alert: ReporteExcelLento
+        expr: histogram_quantile(0.95, sum(rate(pos_reporte_excel_seconds_bucket[5m])) by (le)) > 3
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Generacion de reporte Excel lenta"
+          description: "La latencia p95 del reporte Excel supera los 3 segundos."
