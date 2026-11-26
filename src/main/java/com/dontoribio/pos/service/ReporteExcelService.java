@@ -3,6 +3,7 @@ package com.dontoribio.pos.service;
 import com.dontoribio.pos.model.Compra;
 import com.dontoribio.pos.model.Pago;
 import com.dontoribio.pos.model.Venta;
+import com.dontoribio.pos.util.PosMonitoringServer;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -71,11 +72,14 @@ public class ReporteExcelService {
                 "La fecha de inicio (%s) no puede ser posterior a la fecha de fin (%s)", desde, hasta);
         Preconditions.checkNotNull(salida, "Flujo de salida requerido");
 
+        long inicioNs = System.nanoTime();
         try (Workbook libro = new XSSFWorkbook()) {
             Estilos estilos = new Estilos(libro);
             crearHojaVentas(libro, estilos, ventas, desde, hasta);
             crearHojaResumenPorPago(libro, estilos, ventas);
             libro.write(salida);
+        } finally {
+            PosMonitoringServer.registrarTiempoReporte((System.nanoTime() - inicioNs) / 1_000_000L);
         }
     }
 
@@ -103,11 +107,14 @@ public class ReporteExcelService {
                 "La fecha de inicio (%s) no puede ser posterior a la fecha de fin (%s)", desde, hasta);
         Preconditions.checkNotNull(salida, "Flujo de salida requerido");
 
+        long inicioNs = System.nanoTime();
         try (Workbook libro = new XSSFWorkbook()) {
             Estilos estilos = new Estilos(libro);
             crearHojaCompras(libro, estilos, compras, desde, hasta);
             crearHojaResumenPorProveedor(libro, estilos, compras);
             libro.write(salida);
+        } finally {
+            PosMonitoringServer.registrarTiempoReporte((System.nanoTime() - inicioNs) / 1_000_000L);
         }
     }
 
