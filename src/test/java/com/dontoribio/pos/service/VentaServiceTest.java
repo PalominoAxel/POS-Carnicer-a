@@ -157,7 +157,13 @@ class VentaServiceTest {
 
     @Test
     void registrarVenta_delegaDirectamenteEnElDAO() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        Cliente cliente = new Cliente();
+        cliente.setId(2L);
         Venta venta = new Venta();
+        venta.setUsuario(usuario);
+        venta.setCliente(cliente);
 
         ventaService.registrarVenta(venta);
 
