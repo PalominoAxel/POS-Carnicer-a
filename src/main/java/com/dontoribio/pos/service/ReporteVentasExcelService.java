@@ -2,6 +2,7 @@ package com.dontoribio.pos.service;
 
 import com.dontoribio.pos.model.Pago;
 import com.dontoribio.pos.model.Venta;
+import com.dontoribio.pos.util.PosMonitoringServer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -33,7 +34,17 @@ public class ReporteVentasExcelService {
         return texto;
     }
 
+    /** Exporta el historial y registra la duracion en la metrica pos_reporte_excel_seconds. */
     public void exportarHistorialVentas(List<Venta> ventas, File archivoDestino) throws IOException {
+        long inicioNs = System.nanoTime();
+        try {
+            escribirHistorialVentas(ventas, archivoDestino);
+        } finally {
+            PosMonitoringServer.registrarTiempoReporte((System.nanoTime() - inicioNs) / 1_000_000L);
+        }
+    }
+
+    private void escribirHistorialVentas(List<Venta> ventas, File archivoDestino) throws IOException {
         try (XSSFWorkbook libro = new XSSFWorkbook();
              OutputStream salida = new FileOutputStream(archivoDestino)) {
 

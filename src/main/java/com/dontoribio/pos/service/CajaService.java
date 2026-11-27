@@ -38,13 +38,24 @@ public class CajaService {
         Caja caja = new Caja();
         caja.setUsuario(usuario);
         caja.setMontoInicial(montoInicial.setScale(2, RoundingMode.HALF_UP));
-        Caja abierta = cajaDAO.abrirCaja(caja);
+        Caja abierta;
+        try {
+            abierta = cajaDAO.abrirCaja(caja);
+        } catch (RuntimeException e) {
+            LOG.error("Fallo de BD al abrir caja (usuario={}): {}", usuario.getId(), e.getMessage(), e);
+            throw e;
+        }
         LOG.info("Caja abierta (usuario={}, montoInicial={})", usuario.getId(), caja.getMontoInicial());
         return abierta;
     }
 
     public void cerrarCaja(Long cajaId, LocalDateTime fechaCierre, BigDecimal montoFinal) {
-        cajaDAO.cerrarCaja(cajaId, fechaCierre, montoFinal);
+        try {
+            cajaDAO.cerrarCaja(cajaId, fechaCierre, montoFinal);
+        } catch (RuntimeException e) {
+            LOG.error("Fallo de BD al cerrar caja (cajaId={}): {}", cajaId, e.getMessage(), e);
+            throw e;
+        }
         LOG.info("Caja cerrada (cajaId={}, montoFinal={})", cajaId, montoFinal);
     }
 

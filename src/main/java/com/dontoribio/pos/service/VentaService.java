@@ -15,6 +15,7 @@ import com.dontoribio.pos.model.Venta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import com.dontoribio.pos.util.PosMonitoringServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +91,15 @@ public class VentaService {
     }
 
     public void registrarVenta(Venta venta) {
-        ventaDAO.registrarVenta(venta);
+        try {
+            ventaDAO.registrarVenta(venta);
+        } catch (RuntimeException e) {
+            PosMonitoringServer.VENTAS_ERROR.increment();
+            LOG.error("Fallo al registrar venta (usuario={}, total={}): {}",
+                    venta.getUsuario().getId(), venta.getTotal(), e.getMessage(), e);
+            throw e;
+        }
+        PosMonitoringServer.VENTAS_OK.increment();
         LOG.info("Venta registrada (usuario={}, total={})", venta.getUsuario().getId(), venta.getTotal());
     }
 }

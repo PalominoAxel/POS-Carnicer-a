@@ -70,6 +70,8 @@ public final class DatabaseConnection {
             config.setIdleTimeout(PropertiesLoader.getLong("db.pool.idleTimeout", 600000));
             config.setMaxLifetime(PropertiesLoader.getLong("db.pool.maxLifetime", 1800000));
             config.setPoolName(PropertiesLoader.get("db.pool.name", "DonToribioPool"));
+            // Expone hikaricp_* (conexiones activas/idle/pendientes) en /prometheus
+            config.setMetricRegistry(com.dontoribio.pos.util.PosMonitoringServer.REGISTRY);
 
             dataSource = new HikariDataSource(config);
             LOG.info("Pool de conexiones '{}' inicializado en perfil {}", config.getPoolName(), PropertiesLoader.get("app.profile", "dev"));
