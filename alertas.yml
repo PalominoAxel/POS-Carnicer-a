@@ -11,13 +11,14 @@ groups:
           description: "No hay respuesta del objetivo pos-dontoribio durante 30 segundos."
 
       - alert: ErroresEnCaja
-        expr: increase(pos_ventas_errores_total[2m]) > 0
-        for: 15s
+        expr: rate(pos_ventas_total[1m]) == 0 and up{job="pos-dontoribio"} == 1
+        for: 30s
         labels:
           severity: warning
+          module: caja-ventas
         annotations:
-          summary: "Errores detectados en caja o ventas"
-          description: "Se registraron errores en ventas o caja en los ultimos 2 minutos."
+          summary: "Sin actividad de ventas en caja con POS activo"
+          description: "El servicio pos-dontoribio esta activo pero no se registran ventas en el ultimo minuto."
 
       - alert: ReporteExcelLento
         expr: histogram_quantile(0.95, sum(rate(pos_reporte_excel_seconds_bucket[5m])) by (le)) > 3
